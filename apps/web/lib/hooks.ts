@@ -9,7 +9,7 @@ import type { Score } from '@ledgerlens/types'
 export function useCases() {
   return useQuery({
     queryKey: ['cases'],
-    queryFn: getCases,
+    queryFn: () => getCases(),
   })
 }
 
@@ -36,10 +36,10 @@ export function useSubmitReview() {
 // Stops polling once a real Score (not { status: "pending" }) arrives.
 
 export type ScoreResult =
-  | { score: Score;  isPending: false; isLoading: false; error: null }
-  | { score: null;   isPending: true;  isLoading: false; error: null }
-  | { score: null;   isPending: false; isLoading: true;  error: null }
-  | { score: null;   isPending: false; isLoading: false; error: Error }
+  | { score: Score; isPending: false; isLoading: false; error: null }
+  | { score: null; isPending: true; isLoading: false; error: null }
+  | { score: null; isPending: false; isLoading: true; error: null }
+  | { score: null; isPending: false; isLoading: false; error: Error }
 
 const POLL_TIMEOUT_MS = 90_000 // stop polling after 90s
 
