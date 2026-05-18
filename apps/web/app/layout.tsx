@@ -31,15 +31,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body>
         <Providers>
-          <div
-            className="flex overflow-hidden"
-            style={{ height: '100vh', background: 'var(--bg)' }}
-          >
+          <div className="flex overflow-hidden h-screen bg-bg">
             <SideNav />
             <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
               <TopBar />
-              <main className="flex-1 overflow-auto" style={{ padding: 32 }}>
-                <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+              <main className="flex-1 overflow-auto p-8">
+                <div className="max-w-7xl mx-auto">
                   {children}
                 </div>
               </main>

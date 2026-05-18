@@ -13,7 +13,7 @@ export function CaseTable({ cases = [] }: { cases?: Case[] }) {
       </thead>
       <tbody>
         {cases.map((c) => (
-          <tr key={c.id} className="border-b hover:bg-gray-50">
+          <tr key={c.id} className="border-b hover:bg-card-3">
             <td className="py-3 pr-4 font-medium">{c.title}</td>
             <td className="py-3 pr-4">{c.category}</td>
             <td className="py-3 pr-4">
