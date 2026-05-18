@@ -154,3 +154,63 @@ async def test_post_review_unknown_case(client):
         "time_spent_seconds": 60,
     })
     assert resp.status_code == 404
+
+
+# ── Scores ────────────────────────────────────────────────────────────────────
+
+async def test_get_score_pending(client, db_engine):
+    await _insert_case(db_engine)
+    with patch("app.routes.reviews.score_review", new_callable=AsyncMock):
+        post = await client.post("/reviews", json={
+            "case_id": "001_test",
+            "action": "flag_assumption",
+            "reasoning": "Test.",
+            "time_spent_seconds": 60,
+        })
+    review_id = post.json()["review_id"]
+
+    resp = await client.get(f"/reviews/{review_id}/score")
+    assert resp.status_code == 200
+    assert resp.json() == {"status": "pending"}
+
+
+async def test_get_score_ready(client, db_engine):
+    factory = async_sessionmaker(db_engine, expire_on_commit=False)
+    await _insert_case(db_engine)
+
+    # Create review directly
+    async with factory() as s:
+        review = Review(
+            case_id="001_test", action="approve",
+            reasoning="Direct insert.", time_spent_seconds=120,
+        )
+        s.add(review)
+        await s.commit()
+        await s.refresh(review)
+        review_id = review.id
+
+    # Insert a score directly
+    async with factory() as s:
+        import uuid
+        s.add(Score(
+            id=str(uuid.uuid4()),
+            review_id=review_id,
+            criteria=[
+                {"name": "caught_main_issue", "score": 9, "tone": "pass", "rationale": "Good."},
+                {"name": "over_trusted_ai", "score": 8, "tone": "pass", "rationale": "Good."},
+                {"name": "escalated_appropriately", "score": 10, "tone": "pass", "rationale": "Exact match."},
+                {"name": "explanation_quality", "score": 7, "tone": "partial", "rationale": "OK."},
+            ],
+            total=85.0,
+            feedback_summary="Good work.",
+            expert_would_do="Expert paragraph.",
+            over_trust_delta=0.5,
+        ))
+        await s.commit()
+
+    resp = await client.get(f"/reviews/{review_id}/score")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["total"] == 85.0
+    assert len(body["criteria"]) == 4
+    assert "status" not in body
