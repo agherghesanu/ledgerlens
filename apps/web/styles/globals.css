@@ -2,19 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Backgrounds */
+  --bg: #13131B;
+  --bg-2: #0D0D15;
+
+  /* Card tiers */
+  --card: #1B1B23;
+  --card-2: #1F1F27;
+  --card-3: #292932;
+
+  /* Borders */
+  --border: #464554;
+  --border-dim: #34343D;
+
+  /* Text */
+  --text: #E4E1ED;
+  --text-dim: #C7C4D7;
+  --text-mute: #8a879b;
+
+  /* Accent: Indigo */
+  --indigo: #C0C1FF;
+  --indigo-soft: rgba(192, 193, 255, 0.10);
+  --indigo-dark: #1000A9;
+
+  /* Accent: Green (pass) */
+  --green: #4EDEA3;
+  --green-soft: rgba(16, 185, 129, 0.10);
+
+  /* Accent: Rose (fail/danger) */
+  --rose: #FFB4AB;
+  --rose-soft: rgba(147, 0, 10, 0.20);
+
+  /* Accent: Amber (warning/partial) */
+  --amber: #FFB783;
+  --amber-soft: rgba(217, 119, 33, 0.18);
+}
+
 @layer base {
-  :root {
-    --color-primary: 59 130 246;   /* blue-500 */
-    --color-sidebar: 249 250 251;  /* gray-50 */
+  html {
+    background-color: var(--bg);
+    color: var(--text);
   }
 
   body {
-    @apply text-gray-900 antialiased;
+    @apply antialiased;
+    font-family: var(--font-geist-sans), ui-sans-serif, system-ui;
+  }
+
+  *,
+  *::before,
+  *::after {
+    border-color: var(--border);
   }
 }
 
 @layer utilities {
-  .bg-primary { background-color: rgb(var(--color-primary)); }
-  .text-primary { color: rgb(var(--color-primary)); }
-  .bg-sidebar { background-color: rgb(var(--color-sidebar)); }
+  /* .cap — mono uppercase label, used throughout design system */
+  .cap {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+  }
 }
