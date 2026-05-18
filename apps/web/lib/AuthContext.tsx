@@ -87,17 +87,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push('/login')
   }
 
-  // Prevent flashing protected content before auth is resolved
-  if (isLoading && !PUBLIC_ROUTES.includes(pathname)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-bg">
-        <div className="w-8 h-8 rounded-full border-2 border-indigo border-t-transparent animate-spin" />
-      </div>
-    )
-  }
+  const showSpinner = isLoading && !PUBLIC_ROUTES.includes(pathname)
 
   return (
     <AuthContext.Provider value={{ user, token, login, logout, isLoading }}>
+      {showSpinner && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg">
+          <div className="w-8 h-8 rounded-full border-2 border-indigo border-t-transparent animate-spin" />
+        </div>
+      )}
       {children}
     </AuthContext.Provider>
   )

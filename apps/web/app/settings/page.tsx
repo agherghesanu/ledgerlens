@@ -12,7 +12,7 @@ import { Toggle } from '@/components/ui/Toggle'
 import { Seg } from '@/components/ui/Seg'
 import { Chip } from '@/components/ui/Chip'
 import { useAuth } from '@/lib/AuthContext'
-import { apiFetch } from '@/lib/api'
+import { createCheckoutSession, createOrganization } from '@/lib/api'
 import { Sparkles } from 'lucide-react'
 
 // ── Inline SVG icons (avoid import overhead for small icons) ─────────────────
@@ -281,6 +281,170 @@ function NotifGrid() {
 
 // ── Nav sidebar item ───────────────────────────────────────────────────────────
 
+// ── Billing section ───────────────────────────────────────────────────────────
+
+function BillingSection({
+  subscriptionStatus,
+  accountType,
+  organizationId,
+}: {
+  subscriptionStatus: string
+  accountType: string
+  organizationId: string | null
+}) {
+  const [checkoutLoading, setCheckoutLoading] = useState(false)
+  const [orgName, setOrgName] = useState('')
+  const [orgLoading, setOrgLoading] = useState(false)
+  const [orgError, setOrgError] = useState('')
+
+  const planLabel: Record<string, string> = {
+    free: 'FREE PLAN', pro: 'PRO PLAN', teams: 'TEAMS PLAN',
+  }
+  const planVariant: Record<string, 'amber' | 'indigo' | 'green'> = {
+    free: 'amber', pro: 'indigo', teams: 'green',
+  }
+  const planDesc: Record<string, string> = {
+    free: 'You are on the Free tier.',
+    pro: 'You are on LedgerLens Pro — unlimited cases and advanced analytics.',
+    teams: 'You are on the Teams plan. Create an organization to manage employees.',
+  }
+
+  async function startCheckout(tier: 'pro' | 'teams') {
+    setCheckoutLoading(true)
+    try {
+      const { checkout_url } = await createCheckoutSession(tier)
+      window.location.href = checkout_url
+    } catch {
+      window.alert('Failed to start checkout. Check your API connection.')
+      setCheckoutLoading(false)
+    }
+  }
+
+  async function handleCreateOrg(e: React.FormEvent) {
+    e.preventDefault()
+    if (!orgName.trim()) return
+    setOrgLoading(true)
+    setOrgError('')
+    try {
+      await createOrganization(orgName.trim())
+      window.location.reload()
+    } catch (err) {
+      setOrgError(err instanceof Error ? err.message : 'Failed to create organization')
+      setOrgLoading(false)
+    }
+  }
+
+  return (
+    <SettingsCard
+      title="Subscription & Billing"
+      sub="Manage your plan and payment methods."
+      icon={<Sparkles size={16} />}
+    >
+      {/* Current plan row */}
+      <SettingsRow>
+        <LabelBlock
+          label="Current Plan"
+          desc={planDesc[subscriptionStatus] ?? planDesc.free}
+        />
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <Chip variant={planVariant[subscriptionStatus] ?? 'amber'}>
+            {planLabel[subscriptionStatus] ?? 'FREE PLAN'}
+          </Chip>
+          {subscriptionStatus === 'free' && (
+            <button
+              type="button"
+              disabled={checkoutLoading}
+              className="h-9 px-4 rounded-lg font-mono text-sm font-medium cursor-pointer disabled:opacity-50"
+              style={{ background: 'var(--indigo)', color: 'var(--indigo-dark)', border: 'none' }}
+              onClick={() => startCheckout('pro')}
+            >
+              {checkoutLoading ? 'Loading…' : 'Upgrade to Pro — $15/mo'}
+            </button>
+          )}
+          {subscriptionStatus === 'pro' && (
+            <button
+              type="button"
+              disabled={checkoutLoading}
+              className="h-9 px-4 rounded-lg font-mono text-sm font-medium cursor-pointer disabled:opacity-50"
+              style={{ background: 'var(--green)', color: '#0d0d15', border: 'none' }}
+              onClick={() => startCheckout('teams')}
+            >
+              {checkoutLoading ? 'Loading…' : 'Upgrade to Teams — $199/mo'}
+            </button>
+          )}
+        </div>
+      </SettingsRow>
+
+      {/* Upgrade to Teams row (shown on free plan too) */}
+      {subscriptionStatus === 'free' && (
+        <SettingsRow>
+          <LabelBlock
+            label="Teams Plan"
+            desc="For institutions. Includes custom case creation, employee management, and team dashboards."
+          />
+          <button
+            type="button"
+            disabled={checkoutLoading}
+            className="h-9 px-4 rounded-lg font-mono text-sm cursor-pointer disabled:opacity-50 flex-shrink-0"
+            style={{ background: 'var(--card-3)', color: 'var(--text)', border: '1px solid var(--border)' }}
+            onClick={() => startCheckout('teams')}
+          >
+            {checkoutLoading ? 'Loading…' : 'Get Teams — $199/mo'}
+          </button>
+        </SettingsRow>
+      )}
+
+      {/* Create organization (teams subscribers without an org yet) */}
+      {subscriptionStatus === 'teams' && !organizationId && accountType !== 'institutional_admin' && (
+        <div className="px-5 py-4 flex flex-col gap-3" style={{ borderBottom: '1px solid var(--border-dim)' }}>
+          <LabelBlock
+            label="Create Your Organization"
+            desc="Set up your institutional workspace to add employees and custom cases."
+          />
+          <form onSubmit={handleCreateOrg} className="flex gap-2">
+            <input
+              className="flex-1 h-9 px-3 rounded-lg border text-sm outline-none"
+              style={{ background: 'var(--card-2)', borderColor: 'var(--border)', color: 'var(--text)' }}
+              placeholder="Organization name (e.g. Acme Capital)"
+              value={orgName}
+              onChange={(e) => setOrgName(e.target.value)}
+              required
+            />
+            <button
+              type="submit"
+              disabled={orgLoading || !orgName.trim()}
+              className="h-9 px-4 rounded-lg font-mono text-sm font-medium cursor-pointer disabled:opacity-50 flex-shrink-0"
+              style={{ background: 'var(--indigo)', color: 'var(--indigo-dark)', border: 'none' }}
+            >
+              {orgLoading ? 'Creating…' : 'Create Org'}
+            </button>
+          </form>
+          {orgError && <p className="text-sm m-0" style={{ color: 'var(--rose)' }}>{orgError}</p>}
+        </div>
+      )}
+
+      {/* Already an org admin */}
+      {accountType === 'institutional_admin' && (
+        <SettingsRow>
+          <LabelBlock
+            label="Organization Admin"
+            desc="You manage an institutional workspace. Go to the Admin panel to create cases and invite members."
+          />
+          <a
+            href="/admin"
+            className="h-9 px-4 rounded-lg font-mono text-sm cursor-pointer flex items-center flex-shrink-0"
+            style={{ background: 'var(--card-2)', color: 'var(--text)', border: '1px solid var(--border)', textDecoration: 'none' }}
+          >
+            Open Admin →
+          </a>
+        </SettingsRow>
+      )}
+    </SettingsCard>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 const NAV_SECTIONS = [
   { id: 'general', label: 'General Settings',  icon: <SlidersIcon /> },
   { id: 'billing', label: 'Billing & Plans',   icon: <Sparkles size={16} /> },
@@ -295,7 +459,6 @@ type SectionId = typeof NAV_SECTIONS[number]['id']
 export default function SettingsPage() {
   const { user } = useAuth()
   const [section, setSection] = useState<SectionId>('general')
-  const [isCheckoutLoading, setCheckoutLoading] = useState(false)
 
   // Preferences wired to localStorage
   const [demoMode, setDemoMode]     = useSetting('demo_mode', true)
@@ -413,45 +576,11 @@ export default function SettingsPage() {
 
           {/* ── BILLING ─────────────────────────────────────────────────────── */}
           {section === 'billing' && (
-            <SettingsCard
-              title="Subscription & Billing"
-              sub="Manage your plan and payment methods."
-              icon={<Sparkles size={16} />}
-            >
-              <SettingsRow>
-                <LabelBlock
-                  label="Current Plan"
-                  desc={user?.subscription_status === 'pro' ? 'You are on LedgerLens Pro.' : 'You are currently on the Free tier.'}
-                />
-                <div className="flex items-center gap-3">
-                  <Chip variant={user?.subscription_status === 'pro' ? 'indigo' : 'amber'}>
-                    {user?.subscription_status === 'pro' ? 'PRO PLAN' : 'FREE PLAN'}
-                  </Chip>
-                  <button
-                    type="button"
-                    disabled={isCheckoutLoading}
-                    className="h-9 px-4 rounded-lg font-mono text-sm font-medium border cursor-pointer disabled:opacity-50"
-                    style={{ background: 'var(--indigo)', color: 'var(--indigo-dark)', borderColor: 'var(--indigo)' }}
-                    onClick={async () => {
-                      if (user?.subscription_status === 'pro') {
-                        window.alert('Manage Subscription portal coming soon.')
-                        return
-                      }
-                      setCheckoutLoading(true)
-                      try {
-                        const { checkout_url } = await apiFetch<{ checkout_url: string }>('/stripe/create-checkout-session', { method: 'POST' })
-                        window.location.href = checkout_url
-                      } catch (err) {
-                        window.alert('Failed to start checkout.')
-                        setCheckoutLoading(false)
-                      }
-                    }}
-                  >
-                    {isCheckoutLoading ? 'Loading...' : user?.subscription_status === 'pro' ? 'Manage Plan' : 'Upgrade to Pro'}
-                  </button>
-                </div>
-              </SettingsRow>
-            </SettingsCard>
+            <BillingSection
+              subscriptionStatus={user?.subscription_status ?? 'free'}
+              accountType={user?.account_type ?? 'individual'}
+              organizationId={user?.organization_id ?? null}
+            />
           )}
 
           {/* ── API KEYS ───────────────────────────────────────────────────── */}
