@@ -114,3 +114,43 @@ async def test_get_case_strips_hidden_truth(client, db_engine):
     assert "hidden_truth" not in body
     assert body["title"] == "Marketing Variance"
     assert body["dataset"][0]["account"] == "Revenue"
+
+
+# ── Reviews ───────────────────────────────────────────────────────────────────
+
+async def test_post_review_success(client, db_engine):
+    await _insert_case(db_engine)
+
+    with patch("app.routes.reviews.score_review", new_callable=AsyncMock) as mock_score:
+        resp = await client.post("/reviews", json={
+            "case_id": "001_test",
+            "action": "flag_assumption",
+            "reasoning": "The conference sponsorship is one-time, not recurring.",
+            "time_spent_seconds": 300,
+        })
+
+    assert resp.status_code == 201
+    body = resp.json()
+    assert "review_id" in body
+    mock_score.assert_awaited_once_with(body["review_id"])
+
+
+async def test_post_review_invalid_action(client, db_engine):
+    await _insert_case(db_engine)
+    resp = await client.post("/reviews", json={
+        "case_id": "001_test",
+        "action": "not_a_valid_action",
+        "reasoning": "Test.",
+        "time_spent_seconds": 60,
+    })
+    assert resp.status_code == 422
+
+
+async def test_post_review_unknown_case(client):
+    resp = await client.post("/reviews", json={
+        "case_id": "999_missing",
+        "action": "approve",
+        "reasoning": "Test.",
+        "time_spent_seconds": 60,
+    })
+    assert resp.status_code == 404
