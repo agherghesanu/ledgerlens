@@ -1,7 +1,7 @@
 from __future__ import annotations
 import uuid
-from datetime import datetime, UTC
-from sqlalchemy import String, DateTime, Boolean
+from datetime import date, datetime, UTC
+from sqlalchemy import String, DateTime, Date, Boolean
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.session import Base
@@ -15,6 +15,10 @@ class User(Base):
     )
     email: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String, nullable=False)
+
+    # Profile fields
+    full_name: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
+    date_of_birth: Mapped[date | None] = mapped_column(Date, nullable=True, default=None)
     
     # Stripe billing fields
     stripe_customer_id: Mapped[str | None] = mapped_column(String, nullable=True, default=None)

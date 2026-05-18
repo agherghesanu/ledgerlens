@@ -7,6 +7,8 @@ import { getMe } from './api'
 interface User {
   id: string
   email: string
+  full_name: string | null
+  date_of_birth: string | null
   subscription_status: string
   account_type: 'individual' | 'institutional_admin' | 'institutional_member'
   organization_id: string | null
@@ -50,12 +52,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     getMe(token)
       .then((data) => {
         if (mounted) {
-          const raw = data as Omit<User, 'account_type'> & { account_type?: User['account_type'] }
+          const raw = data as Partial<User>
           setUser({
-            ...raw,
+            id: raw.id ?? '',
+            email: raw.email ?? '',
+            full_name: raw.full_name ?? null,
+            date_of_birth: raw.date_of_birth ?? null,
+            subscription_status: raw.subscription_status ?? 'free',
             account_type: raw.account_type ?? 'individual',
             organization_id: raw.organization_id ?? null,
-          } as User)
+          })
           setIsLoading(false)
         }
       })

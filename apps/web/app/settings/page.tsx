@@ -12,7 +12,7 @@ import { Toggle } from '@/components/ui/Toggle'
 import { Seg } from '@/components/ui/Seg'
 import { Chip } from '@/components/ui/Chip'
 import { useAuth } from '@/lib/AuthContext'
-import { createCheckoutSession, createOrganization } from '@/lib/api'
+import { createCheckoutSession, createOrganization, updateMe } from '@/lib/api'
 import { Sparkles } from 'lucide-react'
 
 // ── Inline SVG icons (avoid import overhead for small icons) ─────────────────
@@ -443,14 +443,122 @@ function BillingSection({
   )
 }
 
+// ── Account section ───────────────────────────────────────────────────────────
+
+function AccountSection({ user }: { user: { email: string; full_name: string | null; date_of_birth: string | null } }) {
+  const [fullName, setFullName] = useState(user.full_name ?? '')
+  const [email, setEmail] = useState(user.email)
+  const [dob, setDob] = useState(user.date_of_birth ?? '')
+  const [currentPw, setCurrentPw] = useState('')
+  const [newPw, setNewPw] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [msg, setMsg] = useState('')
+  const [err, setErr] = useState('')
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault()
+    setSaving(true); setMsg(''); setErr('')
+    try {
+      await updateMe({
+        full_name: fullName || undefined,
+        email: email !== user.email ? email : undefined,
+        date_of_birth: dob || undefined,
+        current_password: currentPw || undefined,
+        new_password: newPw || undefined,
+      })
+      setMsg('Profile updated.')
+      setCurrentPw(''); setNewPw('')
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : 'Update failed')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <SettingsCard title="Account Information" sub="Update your name, email, and password." icon={<EyeIcon />}>
+      <form onSubmit={handleSave} className="flex flex-col">
+        <SettingsRow>
+          <LabelBlock label="Full Name" desc="Your display name across LedgerLens." />
+          <input
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            className="h-9 px-3 rounded-lg border text-sm outline-none"
+            style={{ background: 'var(--card-2)', borderColor: 'var(--border)', color: 'var(--text)', width: 220 }}
+            placeholder="Jane Smith"
+          />
+        </SettingsRow>
+        <SettingsRow>
+          <LabelBlock label="Email Address" desc="Used for login and notifications." />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="h-9 px-3 rounded-lg border text-sm outline-none"
+            style={{ background: 'var(--card-2)', borderColor: 'var(--border)', color: 'var(--text)', width: 220 }}
+            required
+          />
+        </SettingsRow>
+        <SettingsRow>
+          <LabelBlock label="Date of Birth" desc="Used for age verification and analytics." />
+          <input
+            type="date"
+            value={dob}
+            onChange={(e) => setDob(e.target.value)}
+            className="h-9 px-3 rounded-lg border text-sm outline-none"
+            style={{ background: 'var(--card-2)', borderColor: 'var(--border)', color: 'var(--text)', width: 160 }}
+          />
+        </SettingsRow>
+        <SettingsRow>
+          <LabelBlock label="Current Password" desc="Required only when changing your password." />
+          <input
+            type="password"
+            value={currentPw}
+            onChange={(e) => setCurrentPw(e.target.value)}
+            className="h-9 px-3 rounded-lg border text-sm outline-none font-mono"
+            style={{ background: 'var(--card-2)', borderColor: 'var(--border)', color: 'var(--text)', width: 220 }}
+            placeholder="••••••••"
+          />
+        </SettingsRow>
+        <SettingsRow>
+          <LabelBlock label="New Password" desc="Leave blank to keep your current password." />
+          <input
+            type="password"
+            value={newPw}
+            onChange={(e) => setNewPw(e.target.value)}
+            className="h-9 px-3 rounded-lg border text-sm outline-none font-mono"
+            style={{ background: 'var(--card-2)', borderColor: 'var(--border)', color: 'var(--text)', width: 220 }}
+            placeholder="Min 6 characters"
+            minLength={6}
+          />
+        </SettingsRow>
+        <div className="flex items-center justify-between px-5 py-4">
+          <div className="text-sm" style={{ color: msg ? 'var(--green)' : 'var(--rose)' }}>
+            {msg || err}
+          </div>
+          <button
+            type="submit"
+            disabled={saving}
+            className="h-9 px-5 rounded-lg font-mono text-sm font-medium cursor-pointer disabled:opacity-50"
+            style={{ background: 'var(--indigo)', color: 'var(--indigo-dark)', border: 'none' }}
+          >
+            {saving ? 'Saving…' : 'Save Changes'}
+          </button>
+        </div>
+      </form>
+    </SettingsCard>
+  )
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 const NAV_SECTIONS = [
-  { id: 'general', label: 'General Settings',  icon: <SlidersIcon /> },
-  { id: 'billing', label: 'Billing & Plans',   icon: <Sparkles size={16} /> },
-  { id: 'api',     label: 'API Keys',           icon: <KeyIcon /> },
-  { id: 'notifs',  label: 'Notifications',      icon: <BellIcon /> },
-  { id: 'security',label: 'Security',           icon: <EyeIcon /> },
+  { id: 'account', label: 'Account',            icon: <EyeIcon /> },
+  { id: 'general', label: 'General Settings',   icon: <SlidersIcon /> },
+  { id: 'billing', label: 'Billing & Plans',    icon: <Sparkles size={16} /> },
+  { id: 'api',     label: 'API Keys',            icon: <KeyIcon /> },
+  { id: 'notifs',  label: 'Notifications',       icon: <BellIcon /> },
+  { id: 'security',label: 'Security',            icon: <AlertTriIcon /> },
 ] as const
 type SectionId = typeof NAV_SECTIONS[number]['id']
 
@@ -515,6 +623,11 @@ export default function SettingsPage() {
 
         {/* ── Right content ────────────────────────────────────────────────── */}
         <div className="flex flex-col gap-5">
+
+          {/* ── ACCOUNT ────────────────────────────────────────────────────── */}
+          {section === 'account' && user && (
+            <AccountSection user={user} />
+          )}
 
           {/* ── GENERAL ────────────────────────────────────────────────────── */}
           {section === 'general' && (

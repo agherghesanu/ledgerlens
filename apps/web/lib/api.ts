@@ -13,8 +13,8 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   }
 
   const res = await fetch(`${BASE}${path}`, {
-    headers: { ...headers, ...init?.headers },
     ...init,
+    headers: { ...headers, ...init?.headers },
   })
   if (!res.ok) {
     const errText = await res.text()
@@ -208,14 +208,32 @@ export async function login(credentials: URLSearchParams) {
   return res.json() as Promise<{ access_token: string }>
 }
 
-export async function registerUser(data: any) {
+export type RegisterPayload = {
+  email: string
+  password: string
+  full_name?: string
+  date_of_birth?: string
+}
+
+export type UpdateProfilePayload = {
+  full_name?: string
+  email?: string
+  date_of_birth?: string
+  current_password?: string
+  new_password?: string
+}
+
+export async function registerUser(data: RegisterPayload) {
   return apiFetch('/auth/register', { method: 'POST', body: JSON.stringify(data) })
 }
 
 export async function getMe(token?: string) {
-  // If a token is passed, we can force it in the header for the initial load
   const init: RequestInit = token
     ? { headers: { Authorization: `Bearer ${token}` } }
     : {}
   return apiFetch('/auth/me', init)
+}
+
+export function updateMe(data: UpdateProfilePayload) {
+  return apiFetch('/auth/me', { method: 'PATCH', body: JSON.stringify(data) })
 }

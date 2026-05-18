@@ -2,34 +2,37 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/AuthContext'
 import { registerUser, login as apiLogin } from '@/lib/api'
 
 export default function RegisterPage() {
+  const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
+  const [dateOfBirth, setDateOfBirth] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const { login } = useAuth()
-  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setLoading(true)
     try {
-      // 1. Register the user
-      await registerUser({ email, password })
-      
-      // 2. Automatically log them in
+      await registerUser({
+        email,
+        password,
+        full_name: fullName || undefined,
+        date_of_birth: dateOfBirth || undefined,
+      })
       const params = new URLSearchParams()
       params.append('username', email)
       params.append('password', password)
       const data = await apiLogin(params)
-      
-      // 3. Save token and redirect
       login(data.access_token)
-    } catch (err: any) {
-      setError(err.message || 'Registration failed')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Registration failed')
+      setLoading(false)
     }
   }
 
@@ -48,7 +51,18 @@ export default function RegisterPage() {
               {error}
             </div>
           )}
-          
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-text-mute">Full Name</label>
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="h-10 px-3 rounded-lg border border-border bg-card text-text outline-none focus:border-indigo transition-colors"
+              placeholder="Jane Smith"
+            />
+          </div>
+
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-text-mute">Email</label>
             <input
@@ -57,6 +71,16 @@ export default function RegisterPage() {
               onChange={(e) => setEmail(e.target.value)}
               className="h-10 px-3 rounded-lg border border-border bg-card text-text outline-none focus:border-indigo transition-colors"
               required
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-text-mute">Date of Birth</label>
+            <input
+              type="date"
+              value={dateOfBirth}
+              onChange={(e) => setDateOfBirth(e.target.value)}
+              className="h-10 px-3 rounded-lg border border-border bg-card text-text outline-none focus:border-indigo transition-colors"
             />
           </div>
 
@@ -74,17 +98,16 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            className="h-10 mt-2 rounded-lg font-mono text-sm font-medium bg-indigo text-indigo-dark hover:brightness-110 transition-all cursor-pointer"
+            disabled={loading}
+            className="h-10 mt-2 rounded-lg font-mono text-sm font-medium bg-indigo text-[#0d0d15] hover:brightness-110 transition-all cursor-pointer disabled:opacity-50"
           >
-            Create Account
+            {loading ? 'Creating…' : 'Create Account'}
           </button>
         </form>
 
         <div className="text-center text-sm text-text-mute">
           Already have an account?{' '}
-          <Link href="/login" className="text-indigo hover:underline">
-            Sign in
-          </Link>
+          <Link href="/login" className="text-indigo hover:underline">Sign in</Link>
         </div>
       </div>
     </div>
