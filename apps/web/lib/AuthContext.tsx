@@ -19,6 +19,7 @@ interface AuthContextType {
   token: string | null
   login: (token: string) => void
   logout: () => void
+  refreshUser: () => Promise<void>
   isLoading: boolean
 }
 
@@ -93,10 +94,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push('/login')
   }
 
+  const refreshUser = async () => {
+    const t = token ?? localStorage.getItem('ledgerlens:token')
+    if (!t) return
+    try {
+      const raw = (await getMe(t)) as Partial<User>
+      setUser({
+        id: raw.id ?? '',
+        email: raw.email ?? '',
+        full_name: raw.full_name ?? null,
+        date_of_birth: raw.date_of_birth ?? null,
+        subscription_status: raw.subscription_status ?? 'free',
+        account_type: raw.account_type ?? 'individual',
+        organization_id: raw.organization_id ?? null,
+      })
+    } catch {
+      // ignore — stale data is better than a crash
+    }
+  }
+
   const showSpinner = isLoading && !PUBLIC_ROUTES.includes(pathname)
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, token, login, logout, refreshUser, isLoading }}>
       {showSpinner && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg">
           <div className="w-8 h-8 rounded-full border-2 border-indigo border-t-transparent animate-spin" />

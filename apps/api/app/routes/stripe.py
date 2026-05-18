@@ -33,13 +33,25 @@ class CheckoutRequest(BaseModel):
 async def create_checkout_session(
     body: CheckoutRequest,
     current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_session),
 ):
     tier = body.tier if body.tier in PLAN_PRICES else "pro"
+
+    # Dev mode: no real Stripe key configured — simulate upgrade locally
+    if stripe.api_key == "sk_test_mock":
+        stmt = select(User).where(User.id == current_user.id)
+        result = await db.execute(stmt)
+        user = result.scalar_one_or_none()
+        if user:
+            user.subscription_status = tier
+            db.add(user)
+            await db.commit()
+        return {"checkout_url": f"{APP_URL}/settings?success=true&tier={tier}"}
+
     price_id = PLAN_PRICES[tier]
     amount = PLAN_AMOUNTS[tier]
 
     try:
-        # If a real Stripe price ID is configured, use it; otherwise fall back to price_data
         line_item = (
             {"price": price_id, "quantity": 1}
             if not price_id.endswith("_mock")

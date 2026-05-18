@@ -13,3 +13,9 @@ build/
 *.db-shm
 *.db-wal
 .DS_Store
+*.log
+.pytest_cache/
+.coverage
+htmlcov/
+coverage/
+test_gemini.py

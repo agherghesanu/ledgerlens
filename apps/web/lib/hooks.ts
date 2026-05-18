@@ -1,6 +1,7 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useRef } from 'react'
 import { getCases, getCase, submitReview, getScore } from '@/lib/api'
 import type { ReviewCreate } from '@/lib/api'
 import type { Score } from '@ledgerlens/types'
@@ -40,13 +41,17 @@ export type ScoreResult =
   | { score: null;   isPending: false; isLoading: true;  error: null }
   | { score: null;   isPending: false; isLoading: false; error: Error }
 
+const POLL_TIMEOUT_MS = 90_000 // stop polling after 90s
+
 export function useScore(reviewId: string | null): ScoreResult {
+  const startedAt = useRef(Date.now())
+
   const { data, isLoading, error } = useQuery({
     queryKey: ['score', reviewId],
     queryFn: () => getScore(reviewId as string),
     enabled: Boolean(reviewId),
-    // Poll every 800ms while still pending
     refetchInterval: (query) => {
+      if (Date.now() - startedAt.current > POLL_TIMEOUT_MS) return false
       const d = query.state.data
       if (!d) return 800
       if ('status' in d && d.status === 'pending') return 800

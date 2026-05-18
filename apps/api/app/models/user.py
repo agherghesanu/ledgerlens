@@ -1,7 +1,7 @@
 from __future__ import annotations
 import uuid
 from datetime import date, datetime, UTC
-from sqlalchemy import String, DateTime, Date, Boolean
+from sqlalchemy import String, DateTime, Date, Boolean, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.session import Base
@@ -28,6 +28,9 @@ class User(Base):
     account_type: Mapped[str] = mapped_column(String, nullable=False, default="individual")
     # "individual" | "institutional_admin" | "institutional_member"
     organization_id: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
+
+    is_verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default="1")
+    verification_code: Mapped[str | None] = mapped_column(Text, nullable=True, default=None)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)

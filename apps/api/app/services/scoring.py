@@ -16,8 +16,8 @@ from app.services.llm import complete_json
 
 logger = logging.getLogger(__name__)
 
-_HAIKU = "claude-haiku-4-5-20251001"
-_SONNET = "claude-sonnet-4-6"
+_FLASH = "gemini-2.5-flash"
+_PRO   = "gemini-2.5-flash"
 
 _CONCERNED = {"reject", "escalate", "ask_evidence", "flag_assumption"}
 
@@ -154,7 +154,7 @@ async def score_review(review_id: str) -> Score | None:
         rubric = _load_rubric()
 
         grading: GradingResult = await complete_json(
-            model=_HAIKU,
+            model=_FLASH,
             system=[
                 {"type": "text", "text": rubric, "cache_control": {"type": "ephemeral"}}
             ],
@@ -172,9 +172,9 @@ async def score_review(review_id: str) -> Score | None:
             schema=GradingResult,
         )
 
-        ea_score, ea_tone, ea_rationale = _score_escalation(
-            review.action, case.hidden_truth["correctDecision"]
-        )
+        correct_decision = case.hidden_truth["correctDecision"]
+        correct_decisions = [correct_decision] if isinstance(correct_decision, str) else correct_decision
+        ea_score, ea_tone, ea_rationale = _score_escalation(review.action, correct_decisions)
 
         cmi_s = grading.caught_main_issue.score
         ota_s = grading.over_trusted_ai.score
@@ -183,7 +183,7 @@ async def score_review(review_id: str) -> Score | None:
         over_trust_delta = max(-1.0, min(1.0, (ota_s - 5) / 5))
 
         narrative: NarrativeResult = await complete_json(
-            model=_SONNET,
+            model=_PRO,
             system=[
                 {
                     "type": "text",

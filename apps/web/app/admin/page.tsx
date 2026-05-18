@@ -8,7 +8,9 @@ import {
   getCustomCases,
   createCustomCase,
   inviteMember,
+  getOrgMemberScores,
   type CustomCaseCreate,
+  type MemberScore,
 } from '@/lib/api'
 
 export default function AdminPage() {
@@ -25,6 +27,12 @@ export default function AdminPage() {
   const { data: customCases = [] } = useQuery({
     queryKey: ['custom-cases', orgId],
     queryFn: () => getCustomCases(orgId),
+    enabled: Boolean(orgId),
+  })
+
+  const { data: memberScores = [] } = useQuery<MemberScore[]>({
+    queryKey: ['member-scores', orgId],
+    queryFn: () => getOrgMemberScores(orgId),
     enabled: Boolean(orgId),
   })
 
@@ -179,6 +187,39 @@ export default function AdminPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Team performance */}
+      {memberScores.length > 0 && (
+        <div className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="px-5 py-4 border-b border-border">
+            <h3 className="font-display font-bold text-[17px] text-text m-0">Team Performance</h3>
+            <p className="text-sm text-text-dim m-0 mt-0.5">Member accuracy across all reviewed cases.</p>
+          </div>
+          <div className="divide-y divide-border-dim">
+            {memberScores
+              .sort((a, b) => (b.average_score ?? -1) - (a.average_score ?? -1))
+              .map((m) => (
+                <div key={m.user_id} className="px-5 py-3 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-text m-0">{m.full_name ?? m.email}</p>
+                    <p className="text-xs text-text-mute m-0">{m.email} · {m.cases_reviewed} case{m.cases_reviewed !== 1 ? 's' : ''}</p>
+                  </div>
+                  <span
+                    className="font-mono text-sm font-semibold"
+                    style={{
+                      color: m.average_score === null ? 'var(--text-mute)'
+                        : m.average_score >= 75 ? 'var(--green)'
+                        : m.average_score >= 55 ? 'var(--amber)'
+                        : 'var(--rose)',
+                    }}
+                  >
+                    {m.average_score !== null ? `${m.average_score}%` : '—'}
+                  </span>
+                </div>
+              ))}
           </div>
         </div>
       )}

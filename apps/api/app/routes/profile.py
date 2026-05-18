@@ -222,14 +222,14 @@ async def get_stats(
 
     # Accuracy (overall mean, scaled to 0–100)
     scores = [r.total for r in rows]
-    accuracy: float | None = (sum(scores) / len(scores) * 10) if scores else None
+    accuracy: float | None = (sum(scores) / len(scores)) if scores else None
 
     # Accuracy delta
-    now = datetime.now(UTC)
+    now = datetime.now(UTC).replace(tzinfo=None)
     cutoff_recent = now - timedelta(days=30)
     cutoff_prior = now - timedelta(days=60)
-    recent_scores = [r.total * 10 for r in rows if r.submitted_at >= cutoff_recent]
-    prior_scores = [r.total * 10 for r in rows if cutoff_prior <= r.submitted_at < cutoff_recent]
+    recent_scores = [r.total for r in rows if r.submitted_at >= cutoff_recent]
+    prior_scores = [r.total for r in rows if cutoff_prior <= r.submitted_at < cutoff_recent]
     if recent_scores and prior_scores:
         accuracy_delta: float | None = (
             sum(recent_scores) / len(recent_scores)
@@ -249,7 +249,7 @@ async def get_stats(
     week_buckets: dict[datetime, list[float]] = {}
     for r in rows:
         w = week_monday(r.submitted_at)
-        week_buckets.setdefault(w, []).append(r.total * 10)
+        week_buckets.setdefault(w, []).append(r.total)
 
     this_monday = week_monday(now)
     progress: list[ProgressPoint] = []
@@ -294,8 +294,8 @@ async def get_recent(
             case_id=review.case_id,
             case_title=case.title,
             submitted_at=review.submitted_at.isoformat(),
-            score_total=round(score.total * 10, 1),
-            tone=_tone(score.total * 10),
+            score_total=round(score.total, 1),
+            tone=_tone(score.total),
         )
         for review, score, case in rows
     ]
@@ -331,13 +331,13 @@ async def get_profile(
     all_rows = result.all()  # list of (Review, Score, Case), newest first
 
     # Overall accuracy
-    all_totals = [s.total * 10 for _, s, _ in all_rows]
+    all_totals = [s.total for _, s, _ in all_rows]
     accuracy: float | None = round(sum(all_totals) / len(all_totals), 1) if all_totals else None
 
     # ── 3. Skill bars — mean accuracy per case category ───────────────────────
     category_buckets: dict[str, list[float]] = {}
     for _, score, case in all_rows:
-        category_buckets.setdefault(case.category, []).append(score.total * 10)
+        category_buckets.setdefault(case.category, []).append(score.total)
 
     skills: list[SkillBar] = sorted(
         [
@@ -409,9 +409,9 @@ async def get_profile(
             case_id=review.case_id,
             date=review.submitted_at.strftime("%Y-%m-%d"),
             title=case.title,
-            score=round(score.total * 10, 1),
+            score=round(score.total, 1),
             time_spent=format_time_spent(review.time_spent_seconds),
-            tone=_tone(score.total * 10),
+            tone=_tone(score.total),
         )
         for review, score, case in all_rows
     ]

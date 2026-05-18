@@ -5,15 +5,15 @@
 // API Keys are stored in localStorage only (never sent to the backend).
 // The page is one client component because every interaction is local.
 
-import type { Metadata } from 'next'
 import { useState } from 'react'
 import { useSetting } from '@/lib/useSetting'
 import { Toggle } from '@/components/ui/Toggle'
 import { Seg } from '@/components/ui/Seg'
 import { Chip } from '@/components/ui/Chip'
 import { useAuth } from '@/lib/AuthContext'
-import { createCheckoutSession, createOrganization, updateMe } from '@/lib/api'
-import { Sparkles } from 'lucide-react'
+import { createCheckoutSession, createOrganization, updateMe, getMyOrgInfo, type OrgMemberInfo } from '@/lib/api'
+import { Sparkles, LogOut } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
 
 // ── Inline SVG icons (avoid import overhead for small icons) ─────────────────
 
@@ -445,7 +445,15 @@ function BillingSection({
 
 // ── Account section ───────────────────────────────────────────────────────────
 
-function AccountSection({ user }: { user: { email: string; full_name: string | null; date_of_birth: string | null } }) {
+function AccountSection({
+  user,
+  onSaved,
+  onLogout,
+}: {
+  user: { email: string; full_name: string | null; date_of_birth: string | null }
+  onSaved: () => Promise<void>
+  onLogout: () => void
+}) {
   const [fullName, setFullName] = useState(user.full_name ?? '')
   const [email, setEmail] = useState(user.email)
   const [dob, setDob] = useState(user.date_of_birth ?? '')
@@ -466,6 +474,7 @@ function AccountSection({ user }: { user: { email: string; full_name: string | n
         current_password: currentPw || undefined,
         new_password: newPw || undefined,
       })
+      await onSaved()
       setMsg('Profile updated.')
       setCurrentPw(''); setNewPw('')
     } catch (e: unknown) {
@@ -533,17 +542,29 @@ function AccountSection({ user }: { user: { email: string; full_name: string | n
           />
         </SettingsRow>
         <div className="flex items-center justify-between px-5 py-4">
-          <div className="text-sm" style={{ color: msg ? 'var(--green)' : 'var(--rose)' }}>
-            {msg || err}
+          <div className="flex items-center gap-3">
+            <div className="text-sm" style={{ color: msg ? 'var(--green)' : 'var(--rose)' }}>
+              {msg || err}
+            </div>
           </div>
-          <button
-            type="submit"
-            disabled={saving}
-            className="h-9 px-5 rounded-lg font-mono text-sm font-medium cursor-pointer disabled:opacity-50"
-            style={{ background: 'var(--indigo)', color: 'var(--indigo-dark)', border: 'none' }}
-          >
-            {saving ? 'Saving…' : 'Save Changes'}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onLogout}
+              className="inline-flex items-center gap-2 h-9 px-4 rounded-lg font-mono text-sm border cursor-pointer"
+              style={{ background: 'transparent', color: 'var(--rose)', borderColor: 'rgba(255,180,171,0.3)' }}
+            >
+              <LogOut size={14} /> Log Out
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="h-9 px-5 rounded-lg font-mono text-sm font-medium cursor-pointer disabled:opacity-50"
+              style={{ background: 'var(--indigo)', color: 'var(--indigo-dark)', border: 'none' }}
+            >
+              {saving ? 'Saving…' : 'Save Changes'}
+            </button>
+          </div>
         </div>
       </form>
     </SettingsCard>
@@ -553,20 +574,27 @@ function AccountSection({ user }: { user: { email: string; full_name: string | n
 // ─────────────────────────────────────────────────────────────────────────────
 
 const NAV_SECTIONS = [
-  { id: 'account', label: 'Account',            icon: <EyeIcon /> },
-  { id: 'general', label: 'General Settings',   icon: <SlidersIcon /> },
-  { id: 'billing', label: 'Billing & Plans',    icon: <Sparkles size={16} /> },
-  { id: 'api',     label: 'API Keys',            icon: <KeyIcon /> },
-  { id: 'notifs',  label: 'Notifications',       icon: <BellIcon /> },
-  { id: 'security',label: 'Security',            icon: <AlertTriIcon /> },
+  { id: 'account',  label: 'Account',           icon: <EyeIcon /> },
+  { id: 'org',      label: 'Organization',      icon: <BellIcon /> },
+  { id: 'general',  label: 'General Settings',  icon: <SlidersIcon /> },
+  { id: 'billing',  label: 'Billing & Plans',   icon: <Sparkles size={16} /> },
+  { id: 'api',      label: 'API Keys',           icon: <KeyIcon /> },
+  { id: 'notifs',   label: 'Notifications',      icon: <BellIcon /> },
+  { id: 'security', label: 'Security',           icon: <AlertTriIcon /> },
 ] as const
 type SectionId = typeof NAV_SECTIONS[number]['id']
 
 // ── Main page ──────────────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
-  const { user } = useAuth()
-  const [section, setSection] = useState<SectionId>('general')
+  const { user, refreshUser, logout } = useAuth()
+  const [section, setSection] = useState<SectionId>('account')
+
+  const { data: orgInfo } = useQuery<OrgMemberInfo>({
+    queryKey: ['org-my-info', user?.organization_id],
+    queryFn: () => getMyOrgInfo(user!.organization_id!),
+    enabled: Boolean(user?.organization_id),
+  })
 
   // Preferences wired to localStorage
   const [demoMode, setDemoMode]     = useSetting('demo_mode', true)
@@ -626,7 +654,58 @@ export default function SettingsPage() {
 
           {/* ── ACCOUNT ────────────────────────────────────────────────────── */}
           {section === 'account' && user && (
-            <AccountSection user={user} />
+            <AccountSection user={user} onSaved={refreshUser} onLogout={logout} />
+          )}
+
+          {/* ── ORGANIZATION ───────────────────────────────────────────────── */}
+          {section === 'org' && (
+            orgInfo ? (
+              <SettingsCard
+                title={orgInfo.name}
+                sub={`You are a ${orgInfo.your_role} of this organization.`}
+                icon={<SlidersIcon />}
+              >
+                <SettingsRow>
+                  <LabelBlock label="Your Role" desc="Access level within the organization." />
+                  <Chip variant={orgInfo.your_role === 'admin' ? 'indigo' : 'amber'}>
+                    {orgInfo.your_role.toUpperCase()}
+                  </Chip>
+                </SettingsRow>
+                <SettingsRow>
+                  <LabelBlock label="Members" desc="Total accounts in this organization." />
+                  <span className="font-mono text-sm" style={{ color: 'var(--text)' }}>
+                    {orgInfo.member_count} / {orgInfo.max_members}
+                  </span>
+                </SettingsRow>
+                <SettingsRow>
+                  <LabelBlock label="Plan" desc="Organization subscription tier." />
+                  <Chip variant={orgInfo.subscription_status === 'teams' ? 'green' : 'amber'}>
+                    {orgInfo.subscription_status.toUpperCase()}
+                  </Chip>
+                </SettingsRow>
+                {orgInfo.your_role === 'admin' && (
+                  <div className="px-5 py-4">
+                    <a
+                      href="/admin"
+                      className="inline-flex h-9 px-4 rounded-lg font-mono text-sm items-center"
+                      style={{ background: 'var(--indigo)', color: 'var(--indigo-dark)', textDecoration: 'none' }}
+                    >
+                      Open Admin Panel →
+                    </a>
+                  </div>
+                )}
+              </SettingsCard>
+            ) : (
+              <SettingsCard
+                title="Organization"
+                sub="You are not part of any organization."
+                icon={<SlidersIcon />}
+              >
+                <div className="px-5 py-6 text-sm" style={{ color: 'var(--text-dim)' }}>
+                  Ask your admin to invite you, or upgrade to Teams to create your own.
+                </div>
+              </SettingsCard>
+            )
           )}
 
           {/* ── GENERAL ────────────────────────────────────────────────────── */}

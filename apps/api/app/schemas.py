@@ -34,7 +34,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class CasePublic(BaseModel):
     """Full case — hidden_truth intentionally excluded."""
-    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True, serialize_by_alias=True)
     id: str
     title: str
     category: str

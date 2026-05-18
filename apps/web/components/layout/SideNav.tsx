@@ -6,9 +6,8 @@ import {
   LayoutDashboard,
   Briefcase,
   User,
-  History,
   Settings,
-  Sparkles,
+  LogOut,
   Shield,
 } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
@@ -33,7 +32,7 @@ function isActive(id: NavId, pathname: string): boolean {
 
 export function SideNav() {
   const pathname = usePathname()
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
 
   return (
     <nav className="flex flex-col items-center py-4 gap-1 flex-shrink-0 sticky top-0 self-start w-[72px] min-h-screen bg-bg-2 border-r border-border">
@@ -79,10 +78,14 @@ export function SideNav() {
         </Link>
       )}
 
-      {/* Help */}
-      <div className="mt-auto">
-        <button title="Help" className="flex items-center justify-center w-10 h-10 text-text-mute transition-colors">
-          <Sparkles size={18} />
+      {/* Logout */}
+      <div className="mt-auto w-full">
+        <button
+          title="Log out"
+          onClick={logout}
+          className="flex items-center justify-center w-full h-10 text-text-mute hover:text-rose transition-colors"
+        >
+          <LogOut size={18} />
         </button>
       </div>
     </nav>

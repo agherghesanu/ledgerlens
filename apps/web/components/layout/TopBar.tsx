@@ -1,7 +1,9 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { Search, Bell } from 'lucide-react'
+import { Search, Bell, UserCircle } from 'lucide-react'
+import Link from 'next/link'
+import { useAuth } from '@/lib/AuthContext'
 
 type BarConfig = {
   showSearch: boolean
@@ -12,7 +14,7 @@ type BarConfig = {
 
 function getConfig(pathname: string): BarConfig {
   if (pathname === '/dashboard')
-    return { showSearch: true, searchPh: 'Search cases...' }
+    return { showSearch: false, title: 'Dashboard' }
   if (pathname.startsWith('/case'))
     return { showSearch: false, title: 'LedgerLens', crumb: 'Case Review' }
   if (pathname.startsWith('/evaluation'))
@@ -25,6 +27,7 @@ function getConfig(pathname: string): BarConfig {
 export function TopBar() {
   const pathname = usePathname()
   const cfg = getConfig(pathname)
+  const { user } = useAuth()
 
   return (
     <header className="flex items-center justify-between flex-shrink-0 sticky top-0 z-10 h-16 px-8 bg-bg border-b border-border">
@@ -55,14 +58,16 @@ export function TopBar() {
 
       {/* Right */}
       <div className="flex items-center gap-3">
-        <button title="Notifications" className="relative flex items-center justify-center text-text-mute">
-          <Bell size={18} />
-          <span className="absolute w-1.5 h-1.5 top-0 right-0 translate-x-[25%] -translate-y-[25%] rounded-full bg-rose" />
-        </button>
-
-        <div className="flex items-center justify-center rounded-full w-8 h-8 bg-indigo-soft text-indigo font-mono text-xs font-medium">
-          JD
-        </div>
+        <Link
+          href="/settings"
+          title={user?.email ?? 'Settings'}
+          className="flex items-center gap-2 h-8 px-2 rounded-lg hover:bg-card transition-colors text-text-mute hover:text-text"
+        >
+          <UserCircle size={22} />
+          {user?.full_name && (
+            <span className="text-sm text-text-dim hidden sm:block">{user.full_name}</span>
+          )}
+        </Link>
       </div>
     </header>
   )

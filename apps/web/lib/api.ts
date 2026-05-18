@@ -104,8 +104,12 @@ export interface ProfileAggregate {
 
 // ── Fetchers ──────────────────────────────────────────────────────────────────
 
-export function getCases(): Promise<CasePublic[]> {
-  return apiFetch<CasePublic[]>('/cases')
+export function getCases(params?: { category?: string; difficulty?: string }): Promise<CasePublic[]> {
+  const qs = new URLSearchParams()
+  if (params?.category) qs.set('category', params.category)
+  if (params?.difficulty) qs.set('difficulty', params.difficulty)
+  const q = qs.toString()
+  return apiFetch<CasePublic[]>(`/cases${q ? `?${q}` : ''}`)
 }
 
 export function getCase(id: string): Promise<CasePublic> {
@@ -184,6 +188,20 @@ export function getOrganization(orgId: string): Promise<OrgResponse> {
   return apiFetch(`/organizations/${orgId}`)
 }
 
+export type OrgMemberInfo = {
+  id: string
+  name: string
+  admin_user_id: string
+  subscription_status: string
+  max_members: number
+  member_count: number
+  your_role: 'admin' | 'member'
+}
+
+export function getMyOrgInfo(orgId: string): Promise<OrgMemberInfo> {
+  return apiFetch(`/organizations/${orgId}/my-info`)
+}
+
 export function createCustomCase(orgId: string, payload: CustomCaseCreate): Promise<CustomCaseResponse> {
   return apiFetch(`/organizations/${orgId}/cases`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
 }
@@ -196,6 +214,18 @@ export function inviteMember(orgId: string, email: string): Promise<{ status: st
   return apiFetch(`/organizations/${orgId}/invite`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) })
 }
 
+export type MemberScore = {
+  user_id: string
+  email: string
+  full_name: string | null
+  cases_reviewed: number
+  average_score: number | null
+}
+
+export function getOrgMemberScores(orgId: string): Promise<MemberScore[]> {
+  return apiFetch(`/organizations/${orgId}/members/scores`)
+}
+
 // ── Auth ─────────────────────────────────────────────────────────────────────
 
 export async function login(credentials: URLSearchParams) {
@@ -204,7 +234,10 @@ export async function login(credentials: URLSearchParams) {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: credentials,
   })
-  if (!res.ok) throw new Error('Invalid credentials')
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { detail?: string }
+    throw new Error(body.detail ?? 'Invalid credentials')
+  }
   return res.json() as Promise<{ access_token: string }>
 }
 
@@ -225,6 +258,14 @@ export type UpdateProfilePayload = {
 
 export async function registerUser(data: RegisterPayload) {
   return apiFetch('/auth/register', { method: 'POST', body: JSON.stringify(data) })
+}
+
+export function verifyEmail(email: string, code: string): Promise<{ status: string }> {
+  return apiFetch('/auth/verify-email', { method: 'POST', body: JSON.stringify({ email, code }) })
+}
+
+export function resendVerification(email: string): Promise<{ status: string }> {
+  return apiFetch('/auth/resend-verification', { method: 'POST', body: JSON.stringify({ email }) })
 }
 
 export async function getMe(token?: string) {

@@ -1,3 +1,5 @@
+import random
+import string
 from datetime import date
 from typing import Optional
 
@@ -10,7 +12,11 @@ from pydantic import BaseModel, EmailStr
 from app.db.session import get_session
 from app.models.user import User
 from app.core.security import get_password_hash, verify_password, create_access_token, get_current_user
-from app.services.email import send_welcome_email
+from app.services.email import send_welcome_email, send_verification_email
+
+
+def _gen_code() -> str:
+    return ''.join(random.choices(string.digits, k=6))
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -38,6 +44,12 @@ class UserResponse(BaseModel):
     subscription_status: str
     account_type: str = "individual"
     organization_id: Optional[str] = None
+    is_verified: bool = True
+
+
+class VerifyEmailRequest(BaseModel):
+    email: EmailStr
+    code: str
 
 
 class Token(BaseModel):
@@ -56,16 +68,20 @@ async def register(
     if result.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Email already registered")
 
+    code = _gen_code()
     user = User(
         email=user_in.email,
         hashed_password=get_password_hash(user_in.password),
         full_name=user_in.full_name,
         date_of_birth=user_in.date_of_birth,
+        is_verified=False,
+        verification_code=code,
     )
     db.add(user)
     await db.commit()
     await db.refresh(user)
     background_tasks.add_task(send_welcome_email, user_in.email)
+    background_tasks.add_task(send_verification_email, user_in.email, code)
     return user
 
 
@@ -85,8 +101,58 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    if not user.is_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Email not verified. Check your inbox for the 6-digit code.",
+        )
+
     access_token = create_access_token(data={"sub": user.id})
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+class ResendRequest(BaseModel):
+    email: EmailStr
+
+
+@router.post("/resend-verification")
+async def resend_verification_code(
+    body: ResendRequest,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_session),
+):
+    stmt = select(User).where(User.email == body.email)
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
+    if not user or user.is_verified:
+        return {"status": "ok"}
+    code = _gen_code()
+    user.verification_code = code
+    db.add(user)
+    await db.commit()
+    background_tasks.add_task(send_verification_email, body.email, code)
+    return {"status": "ok"}
+
+
+@router.post("/verify-email")
+async def verify_email(
+    body: VerifyEmailRequest,
+    db: AsyncSession = Depends(get_session),
+):
+    stmt = select(User).where(User.email == body.email)
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.is_verified:
+        return {"status": "already_verified"}
+    if user.verification_code != body.code:
+        raise HTTPException(status_code=400, detail="Invalid verification code")
+    user.is_verified = True
+    user.verification_code = None
+    db.add(user)
+    await db.commit()
+    return {"status": "verified"}
 
 
 @router.get("/me", response_model=UserResponse)
