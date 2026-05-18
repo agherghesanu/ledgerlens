@@ -37,6 +37,10 @@ async def client(db_engine):
 
     app.dependency_overrides[get_session] = override_get_session
 
+    from app.core.security import get_current_user
+    from app.models.user import User
+    app.dependency_overrides[get_current_user] = lambda: User(id="test_user", email="test@test.com")
+
     with patch("app.main.seed_if_empty", new_callable=AsyncMock), \
          patch("app.main.engine", new=db_engine):
         async with AsyncClient(
@@ -180,8 +184,13 @@ async def test_get_score_ready(client, db_engine):
 
     # Create review directly
     async with factory() as s:
+        from app.models.user import User
+        existing_user = await s.get(User, "test_user")
+        if not existing_user:
+            s.add(User(id="test_user", email="test@test.com", hashed_password="pw"))
+
         review = Review(
-            case_id="001_test", action="approve",
+            case_id="001_test", user_id="test_user", action="approve",
             reasoning="Direct insert.", time_spent_seconds=120,
         )
         s.add(review)

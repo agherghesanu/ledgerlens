@@ -20,7 +20,7 @@ class Review(Base):
     case_id: Mapped[str] = mapped_column(
         String, ForeignKey("cases.id"), nullable=False
     )
-    user_id: Mapped[str] = mapped_column(String, nullable=False, default="anonymous")
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"), nullable=False)
     action: Mapped[str] = mapped_column(String, nullable=False)
     reasoning: Mapped[str] = mapped_column(Text, nullable=False)
     time_spent_seconds: Mapped[int] = mapped_column(Integer, nullable=False)

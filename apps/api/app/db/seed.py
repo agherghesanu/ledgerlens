@@ -44,7 +44,7 @@ async def seed_if_empty() -> None:
         schema = _load_schema()
         inserted = 0
         for path in sorted(_CASES_DIR.glob("*.json")):
-            raw = json.loads(path.read_text())
+            raw = json.loads(path.read_text(encoding='utf-8'))
             try:
                 jsonschema.validate(raw, schema)
             except jsonschema.ValidationError as exc:

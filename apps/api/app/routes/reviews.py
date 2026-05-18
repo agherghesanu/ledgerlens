@@ -10,11 +10,15 @@ from app.services.scoring import score_review
 router = APIRouter(prefix="/reviews", tags=["reviews"])
 
 
+from app.core.security import get_current_user
+from app.models.user import User
+
 @router.post("", response_model=ReviewCreated, status_code=201)
 async def create_review(
     body: ReviewCreate,
     background_tasks: BackgroundTasks,
     session: AsyncSession = Depends(get_session),
+    current_user: User = Depends(get_current_user)
 ):
     case = await session.get(Case, body.case_id)
     if not case:
@@ -22,6 +26,7 @@ async def create_review(
 
     review = Review(
         case_id=body.case_id,
+        user_id=current_user.id,
         action=body.action,
         reasoning=body.reasoning,
         time_spent_seconds=body.time_spent_seconds,

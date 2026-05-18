@@ -1,5 +1,5 @@
-import { Chip } from "@/components/ui/Chip";
-import type { CasePublic } from "@/lib/api";
+import { Chip } from '@/components/ui/Chip'
+import type { CasePublic } from '@/lib/api'
 
 export function CaseTable({ cases = [] }: { cases?: CasePublic[] }) {
   return (
@@ -17,11 +17,11 @@ export function CaseTable({ cases = [] }: { cases?: CasePublic[] }) {
             <td className="py-3 pr-4 font-medium">{c.title}</td>
             <td className="py-3 pr-4">{c.category}</td>
             <td className="py-3 pr-4">
-              <Chip label={c.difficulty} />
+              <Chip>{c.difficulty}</Chip>
             </td>
           </tr>
         ))}
       </tbody>
     </table>
-  );
+  )
 }

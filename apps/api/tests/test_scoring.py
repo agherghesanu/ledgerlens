@@ -7,6 +7,7 @@ from app.db.session import Base
 from app.models.case import Case
 from app.models.review import Review
 from app.models.score import Score
+from app.models.user import User
 from app.services.scoring import (
     score_review,
     GradingResult,
@@ -46,8 +47,10 @@ async def _seed(factory, action: str, reasoning: str, correct_decisions: list[st
                 "aiFailureMode": "one_off_as_recurring",
             },
         ))
+        s.add(User(id="test_user", email="test@test.com", hashed_password="pw"))
         review = Review(
             case_id="001_t",
+            user_id="test_user",
             action=action,
             reasoning=reasoning,
             time_spent_seconds=300,

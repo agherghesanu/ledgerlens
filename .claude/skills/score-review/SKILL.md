@@ -28,4 +28,4 @@ Cache the case's truth data + rubric instructions. The only thing that varies pe
 
 ## Output shape
 
-The service returns a dict matching `score.schema.json`. Always parse Claude's JSON output with Pydantic — never trust the model to produce valid JSON without validation + one retry on parse failure.
+The service returns a dict matching `score.schema.json`. Always parse Claude's JSON output with Pydantic — never trust the model to produce valid JSON without validation + one retry on parse failure./

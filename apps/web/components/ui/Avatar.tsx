@@ -1,11 +1,38 @@
-export function Avatar({ src, name, size = 32 }: { src?: string; name: string; size?: number }) {
-  if (src) return <img src={src} alt={name} width={size} height={size} className="rounded-full" />;
+// Avatar — initials fallback, exact mockup spec.
+// Styled with Tailwind. `font-mono` + ring from card-3/border.
+interface AvatarProps {
+  /** Two-character initials shown as fallback */
+  initials?: string
+  /** Optional image src — renders <img> instead of initials */
+  src?: string
+  /** Size in px. Font scales at 36% of size per mockup. Default 32. */
+  size?: number
+}
+
+export function Avatar({ initials = 'JD', src, size = 32 }: AvatarProps) {
+  const style = { width: size, height: size, fontSize: Math.round(size * 0.36) }
+
+  if (src) {
+    return (
+      <img
+        src={src}
+        alt={initials}
+        width={size}
+        height={size}
+        className="rounded-full border border-border object-cover"
+        style={style}
+      />
+    )
+  }
+
   return (
     <div
-      className="rounded-full bg-primary flex items-center justify-center text-white font-medium"
-      style={{ width: size, height: size, fontSize: size * 0.4 }}
+      className="rounded-full bg-card-3 border border-border inline-flex items-center justify-center font-mono font-semibold text-text select-none flex-shrink-0"
+      style={style}
     >
-      {name.charAt(0).toUpperCase()}
+      {initials.slice(0, 2).toUpperCase()}
     </div>
-  );
+  )
 }
+
+// Smoke: <Avatar initials="JD" /> <Avatar initials="AB" size={24} />

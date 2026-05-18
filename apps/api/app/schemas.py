@@ -30,16 +30,18 @@ class CaseListItem(BaseModel):
     difficulty: str
 
 
+from pydantic import BaseModel, ConfigDict, Field
+
 class CasePublic(BaseModel):
     """Full case — hidden_truth intentionally excluded."""
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
     id: str
     title: str
     category: str
     difficulty: str
     dataset: list[DataRow]
-    ai_narrative: str
-    ai_recommendation: str
+    ai_narrative: str = Field(alias="aiNarrative")
+    ai_recommendation: str = Field(alias="aiRecommendation")
 
 
 # ── Review ────────────────────────────────────────────────────────────────────

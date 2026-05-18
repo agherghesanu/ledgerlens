@@ -1,3 +1,4 @@
+
 Output style: no preamble, no postamble, no meta-commentary, no tool announcements.
 Execute the task. Show the code. Move on. Explain only when explicitly asked.
 
