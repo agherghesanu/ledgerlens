@@ -30,7 +30,7 @@ export function useSubmitReview() {
 export function useScore(reviewId: string | null) {
   return useQuery({
     queryKey: ['score', reviewId],
-    queryFn: () => getScore(reviewId!),
+    queryFn: () => getScore(reviewId as string),
     enabled: Boolean(reviewId),
     refetchInterval: (query) => {
       const data = query.state.data

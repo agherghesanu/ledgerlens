@@ -35,27 +35,11 @@ export function SideNav() {
   const pathname = usePathname()
 
   return (
-    <nav
-      className="flex flex-col items-center py-4 gap-1 flex-shrink-0"
-      style={{
-        width: 72,
-        minHeight: '100vh',
-        position: 'sticky',
-        top: 0,
-        alignSelf: 'flex-start',
-        background: 'var(--bg-2)',
-        borderRight: '1px solid var(--border)',
-      }}
-    >
+    <nav className="flex flex-col items-center py-4 gap-1 flex-shrink-0 sticky top-0 self-start w-[72px] min-h-screen bg-bg-2 border-r border-border">
       {/* Logo */}
       <div className="flex flex-col items-center mb-4 gap-0.5">
-        <span
-          className="font-display font-bold text-sm"
-          style={{ color: 'var(--indigo)', letterSpacing: '0.04em' }}
-        >
-          LL
-        </span>
-        <span className="cap" style={{ fontSize: 9 }}>Finance</span>
+        <span className="font-display font-bold text-sm text-indigo tracking-[0.04em]">LL</span>
+        <span className="cap text-[9px]">Finance</span>
       </div>
 
       {/* Nav items */}
@@ -66,18 +50,12 @@ export function SideNav() {
             key={id}
             href={href}
             title={label}
-            className="relative flex items-center justify-center w-full transition-colors"
-            style={{
-              height: 40,
-              color: active ? 'var(--indigo)' : 'var(--text-mute)',
-              background: active ? 'var(--indigo-soft)' : 'transparent',
-            }}
+            className={`relative flex items-center justify-center w-full h-10 transition-colors ${
+              active ? 'text-indigo bg-indigo-soft' : 'text-text-mute'
+            }`}
           >
             {active && (
-              <span
-                className="absolute left-0 rounded-r"
-                style={{ top: 6, bottom: 6, width: 3, background: 'var(--indigo)' }}
-              />
+              <span className="absolute left-0 top-[6px] bottom-[6px] w-[3px] rounded-r bg-indigo" />
             )}
             <Icon size={18} />
           </Link>
@@ -86,11 +64,7 @@ export function SideNav() {
 
       {/* Help */}
       <div className="mt-auto">
-        <button
-          title="Help"
-          className="flex items-center justify-center w-10 h-10 transition-colors"
-          style={{ color: 'var(--text-mute)' }}
-        >
+        <button title="Help" className="flex items-center justify-center w-10 h-10 text-text-mute transition-colors">
           <Sparkles size={18} />
         </button>
       </div>

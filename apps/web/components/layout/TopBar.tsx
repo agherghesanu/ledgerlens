@@ -27,59 +27,26 @@ export function TopBar() {
   const cfg = getConfig(pathname)
 
   return (
-    <header
-      className="flex items-center justify-between flex-shrink-0 sticky top-0 z-10"
-      style={{
-        height: 64,
-        paddingInline: 32,
-        background: 'var(--bg)',
-        borderBottom: '1px solid var(--border)',
-      }}
-    >
+    <header className="flex items-center justify-between flex-shrink-0 sticky top-0 z-10 h-16 px-8 bg-bg border-b border-border">
       {/* Left */}
       <div className="flex items-center gap-3">
         {cfg.showSearch && (
-          <div
-            className="flex items-center gap-2 px-3"
-            style={{
-              height: 36,
-              width: 240,
-              background: 'var(--card)',
-              border: '1px solid var(--border)',
-              borderRadius: 8,
-            }}
-          >
-            <Search size={14} style={{ color: 'var(--text-mute)', flexShrink: 0 }} />
+          <div className="flex items-center gap-2 px-3 h-9 w-60 bg-card border border-border rounded-lg">
+            <Search size={14} className="text-text-mute shrink-0" />
             <input
               placeholder={cfg.searchPh}
-              className="flex-1 bg-transparent text-sm outline-none"
-              style={{ color: 'var(--text)' }}
+              className="flex-1 bg-transparent text-sm text-text outline-none placeholder:text-text-mute"
             />
-            <span
-              className="cap"
-              style={{
-                fontSize: 10,
-                padding: '2px 6px',
-                background: 'var(--card-3)',
-                borderRadius: 4,
-                flexShrink: 0,
-              }}
-            >
-              ⌘K
-            </span>
+            <span className="cap text-[10px] py-0.5 px-1.5 bg-card-3 rounded shrink-0">⌘K</span>
           </div>
         )}
         {cfg.title && (
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-sm" style={{ color: 'var(--text)' }}>
-              {cfg.title}
-            </span>
+            <span className="font-semibold text-sm text-text">{cfg.title}</span>
             {cfg.crumb && (
               <>
-                <span style={{ color: 'var(--border)', fontSize: 16 }}>|</span>
-                <span className="text-sm" style={{ color: 'var(--text-mute)' }}>
-                  {cfg.crumb}
-                </span>
+                <span className="text-border text-base">|</span>
+                <span className="text-sm text-text-mute">{cfg.crumb}</span>
               </>
             )}
           </div>
@@ -88,35 +55,12 @@ export function TopBar() {
 
       {/* Right */}
       <div className="flex items-center gap-3">
-        <button
-          title="Notifications"
-          className="relative flex items-center justify-center"
-          style={{ color: 'var(--text-mute)' }}
-        >
+        <button title="Notifications" className="relative flex items-center justify-center text-text-mute">
           <Bell size={18} />
-          <span
-            className="absolute rounded-full"
-            style={{
-              width: 6,
-              height: 6,
-              top: 0,
-              right: 0,
-              transform: 'translate(25%, -25%)',
-              background: 'var(--rose)',
-            }}
-          />
+          <span className="absolute w-1.5 h-1.5 top-0 right-0 translate-x-[25%] -translate-y-[25%] rounded-full bg-rose" />
         </button>
 
-        <div
-          className="flex items-center justify-center rounded-full text-xs font-medium"
-          style={{
-            width: 32,
-            height: 32,
-            background: 'var(--indigo-soft)',
-            color: 'var(--indigo)',
-            fontFamily: 'var(--font-mono)',
-          }}
-        >
+        <div className="flex items-center justify-center rounded-full w-8 h-8 bg-indigo-soft text-indigo font-mono text-xs font-medium">
           JD
         </div>
       </div>
