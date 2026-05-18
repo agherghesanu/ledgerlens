@@ -1,0 +1,66 @@
+{
+  "id": "004_payroll_accrual",
+  "title": "Meridian Logistics Group — Q4 Bonus Accrual Omission",
+  "category": "Payroll & Accruals",
+  "difficulty": "medium",
+  "dataset": [
+    {
+      "account": "Base Salaries & Wages",
+      "budget": 1240000,
+      "actual": 1237500,
+      "variance": 2500,
+      "notes": "On budget; headcount stable through Q4"
+    },
+    {
+      "account": "Q4 Performance Bonus Accrual",
+      "budget": 180000,
+      "actual": 0,
+      "variance": -180000,
+      "flagged": true,
+      "notes": "Bonus pool earned in Q4; cash payment scheduled January"
+    },
+    {
+      "account": "Payroll Taxes (Employer)",
+      "budget": 112000,
+      "actual": 110800,
+      "variance": 1200,
+      "notes": "Slightly favorable; reflects $0 bonus base"
+    },
+    {
+      "account": "Employee Benefits & Insurance",
+      "budget": 198000,
+      "actual": 196400,
+      "variance": 1600,
+      "notes": "Health and dental within plan"
+    },
+    {
+      "account": "401(k) Employer Match",
+      "budget": 49600,
+      "actual": 49500,
+      "variance": 100,
+      "notes": "On track"
+    },
+    {
+      "account": "Total Compensation Expense",
+      "budget": 1779600,
+      "actual": 1594200,
+      "variance": 185400,
+      "flagged": true,
+      "notes": "Favorable variance driven entirely by missing bonus accrual"
+    }
+  ],
+  "aiNarrative": "Q4 compensation expense totaled $1,594,200 against a budget of $1,779,600, producing a favorable variance of $185,400 (10.4%). Reviewing each line item: base salaries came in $2,500 under budget — headcount was stable and no mid-quarter terminations or new hires materially impacted the run rate. Employer payroll taxes, benefits, and 401(k) match are all within 1% of plan. Payroll records confirm that all cash disbursements for the quarter were processed and reconcile to the general ledger. With every compensation line either on budget or favorable, the Q4 payroll close appears clean. The overall favorable variance improves Q4 operating income and is consistent with disciplined headcount management. Recommend approving the Q4 compensation close.",
+  "aiRecommendation": "approve",
+  "hiddenTruth": {
+    "correctDecision": ["reject", "flag_assumption"],
+    "correctIssueSummary": "The AI treated the absence of a cash bonus payment as confirmation that no bonus expense was incurred, ignoring the accrual basis requirement to recognize the $180,000 Q4 bonus obligation in the period it was earned.",
+    "expertFeedback": "Under ASC 420 and the accrual basis of accounting, a bonus earned during Q4 must be recognized as a liability and expense in Q4 regardless of when the cash is paid. The matching principle requires that compensation costs be matched to the period of employee service that generated them. The $180,000 bonus pool was earned against Q4 performance targets — the January payment date is irrelevant to the recognition period. An experienced reviewer would immediately question why the 'Q4 Performance Bonus Accrual' line shows $0 actual against an $180,000 budget, pull the bonus plan documentation and approval memo, and require a journal entry debiting Bonus Expense and crediting Accrued Compensation before closing the period.",
+    "evidenceToRequest": [
+      "Q4 performance bonus plan document and board or compensation committee approval memo",
+      "Confirmation of Q4 targets met and approved bonus pool calculation ($180,000)",
+      "Prior-year Q4 GL entries showing bonus accrual treatment for comparison",
+      "January payroll register confirming the bonus payment and the period it was expensed"
+    ],
+    "aiFailureMode": "accrual_vs_cash"
+  }
+}

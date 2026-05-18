@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ledgerlens.dev/schemas/score.schema.json",
+  "title": "Score",
+  "description": "The system's evaluation of a Review against the case's hiddenTruth",
+  "type": "object",
+  "$defs": {
+    "CriterionName": {
+      "type": "string",
+      "enum": [
+        "caught_main_issue",
+        "over_trusted_ai",
+        "escalated_appropriately",
+        "explanation_quality"
+      ]
+    },
+    "Tone": {
+      "type": "string",
+      "enum": ["pass", "fail", "partial", "neutral"],
+      "description": "Drives score-card color in the UI (green / rose / amber / indigo)"
+    },
+    "CriterionScore": {
+      "type": "object",
+      "required": ["name", "score", "tone", "rationale"],
+      "additionalProperties": false,
+      "properties": {
+        "name":     { "$ref": "#/$defs/CriterionName" },
+        "score":    { "type": "integer", "minimum": 0, "maximum": 10 },
+        "tone":     { "$ref": "#/$defs/Tone" },
+        "rationale": {
+          "type": "string",
+          "description": "Verbatim evidence or explanation produced by the scoring LLM"
+        }
+      }
+    }
+  },
+  "required": [
+    "id",
+    "review_id",
+    "criteria",
+    "total",
+    "feedback_summary",
+    "expert_would_do",
+    "over_trust_delta"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id":        { "type": "string", "format": "uuid" },
+    "review_id": { "type": "string", "format": "uuid" },
+    "criteria": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/CriterionScore" },
+      "minItems": 4,
+      "maxItems": 4,
+      "description": "Exactly one entry per CriterionName, in order"
+    },
+    "total": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Mean of the four criterion scores × 10"
+    },
+    "feedback_summary": {
+      "type": "string",
+      "description": "LLM-generated paragraph comparing analyst's work to the expert baseline"
+    },
+    "expert_would_do": {
+      "type": "string",
+      "description": "LLM-generated paragraph: what an expert analyst would have noticed and done"
+    },
+    "over_trust_delta": {
+      "type": "number",
+      "minimum": -1,
+      "maximum": 1,
+      "description": "Signed shift applied to user's running Over-Trust Index. Positive = appropriately skeptical; negative = over-trusted AI. Derived from over_trusted_ai.score."
+    }
+  },
+  "examples": [
+    {
+      "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "review_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "criteria": [
+        {
+          "name": "caught_main_issue",
+          "score": 9,
+          "tone": "pass",
+          "rationale": "Analyst explicitly identified the FinanceConnect sponsorship as one-time and named it as the source of the forecast inflation."
+        },
+        {
+          "name": "over_trusted_ai",
+          "score": 8,
+          "tone": "pass",
+          "rationale": "Analyst challenged the AI's run-rate assumption directly and refused to approve without verification."
+        },
+        {
+          "name": "escalated_appropriately",
+          "score": 10,
+          "tone": "pass",
+          "rationale": "Chose flag_assumption — exact match to correctDecision."
+        },
+        {
+          "name": "explanation_quality",
+          "score": 7,
+          "tone": "partial",
+          "rationale": "Reasoning is specific and finance-relevant but does not quantify the correct full-year estimate ($481.5K vs AI's $1.45M)."
+        }
+      ],
+      "total": 85,
+      "feedback_summary": "Strong identification of the one-time vs. recurring distinction. You correctly challenged the AI's quarterly run-rate and requested source documentation before approving. Minor gap: quantifying the correct full-year budget ($481.5K) would strengthen the case for rejection.",
+      "expert_would_do": "An expert analyst would isolate the conference sponsorship from recurring marketing costs and compute two run-rates separately: recurring Q1 spend ($122.5K × 4 = $490K) plus the one-time event ($240K, once), yielding a corrected full-year estimate of ~$481.5K against the $1.45M the AI projected — a $968.5K overstatement that warrants a budget reforecast.",
+      "over_trust_delta": 0.6
+    }
+  ]
+}

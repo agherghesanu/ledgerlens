@@ -1,0 +1,68 @@
+{
+  "id": "008_capex_vs_opex",
+  "title": "Greystone Commercial Properties — HVAC Repair Capitalization",
+  "category": "CapEx vs OpEx",
+  "difficulty": "easy",
+  "dataset": [
+    {
+      "account": "Work Order / Invoice — HVAC Compressor Replacement",
+      "budget": 0,
+      "actual": 85000,
+      "variance": -85000,
+      "flagged": true,
+      "notes": "Like-for-like compressor unit; failed unit replaced with equivalent model"
+    },
+    {
+      "account": "Building Asset — Gross Carrying Value (pre-entry)",
+      "budget": 4200000,
+      "actual": 4200000,
+      "variance": 0,
+      "notes": "Original acquisition cost; 39-year straight-line depreciation"
+    },
+    {
+      "account": "Accumulated Depreciation — Building (pre-entry)",
+      "budget": -1176000,
+      "actual": -1176000,
+      "variance": 0,
+      "notes": "~28% depreciated; building placed in service 2013"
+    },
+    {
+      "account": "AI-Proposed Entry: Debit Building Asset (CapEx)",
+      "budget": 0,
+      "actual": 85000,
+      "variance": -85000,
+      "flagged": true,
+      "notes": "Capitalizes $85K; adds 15-yr depreciation stream ~$5,667/yr"
+    },
+    {
+      "account": "Correct Entry: Debit Repairs & Maintenance Expense (OpEx)",
+      "budget": 12000,
+      "actual": 85000,
+      "variance": -73000,
+      "flagged": true,
+      "notes": "Full $85K expensed in period; no depreciation tail created"
+    },
+    {
+      "account": "Impact on Current-Period Operating Income (AI vs. Correct)",
+      "budget": 0,
+      "actual": 85000,
+      "variance": -85000,
+      "flagged": true,
+      "notes": "AI approach overstates operating income by $85K this period; understates expense"
+    }
+  ],
+  "aiNarrative": "Greystone Commercial Properties submitted a $85,000 invoice for the replacement of an HVAC compressor unit at its Westfield Office Center property. Reviewing the work order, I note that the expenditure is significant — well above the company's $5,000 capitalization threshold — and involves a major mechanical component that is integral to the building's operating systems. Based on the dollar magnitude and the fact that the HVAC system is a structural component of the building asset, this expenditure extends the useful life of the building and qualifies as a capital improvement under ASC 360-10. I recommend recording a debit to the Building asset account for $85,000 and depreciating the component over 15 years (straight-line, ~$5,667 per year), consistent with MACRS guidance for HVAC systems. This treatment capitalizes the cost, preserves current-period operating income, and appropriately matches the expense to the future periods benefited by the improved asset. Recommend approving the capitalization.",
+  "aiRecommendation": "approve",
+  "hiddenTruth": {
+    "correctDecision": ["reject", "flag_assumption"],
+    "correctIssueSummary": "The AI incorrectly capitalized a like-for-like component replacement that merely restores original operating condition, violating ASC 360-10-25's betterment standard and overstating assets by $85,000 while understating current-period maintenance expense by the same amount.",
+    "expertFeedback": "Under ASC 360-10-25-2, a cost is capitalized only if it extends the asset's useful life beyond original estimates, adds new capabilities, or represents a betterment — replacing a failed compressor with an equivalent unit does none of these. The work order explicitly describes a like-for-like replacement, which is restoration of original operating condition and must be expensed as maintenance. Capitalizing it inflates the building asset by $85,000, creates a fictitious 15-year depreciation stream, and flatters current-period operating income by the full $85,000. An experienced reviewer would pull the original equipment specifications alongside the replacement invoice to confirm the units are equivalent, then require a correcting entry debiting Repairs & Maintenance Expense and crediting the Building asset account.",
+    "evidenceToRequest": [
+      "Original HVAC equipment specification sheet and installation records to confirm the replaced unit's model, capacity, and rated useful life",
+      "Vendor invoice and work order confirming the replacement compressor is a like-for-like equivalent (model number, BTU capacity, energy rating)",
+      "Company capitalization policy defining the criteria for betterment vs. maintenance",
+      "Prior-year GL entries for HVAC repairs to establish historical treatment of similar expenditures"
+    ],
+    "aiFailureMode": "wrong_cost_category"
+  }
+}

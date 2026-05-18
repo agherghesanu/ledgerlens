@@ -1,0 +1,51 @@
+{
+  "id": "003_hardware_sales_drop",
+  "title": "Q3 Revenue Reconciliation — Hardware Sales Anomaly",
+  "category": "Reconciliation",
+  "difficulty": "medium",
+  "dataset": [
+    {
+      "account": "Subscription Revenue",
+      "budget": 1200000,
+      "actual": 1450000,
+      "variance": 250000,
+      "notes": "Unexpected Q3 surge"
+    },
+    {
+      "account": "Professional Services",
+      "budget": 300000,
+      "actual": 280000,
+      "variance": -20000,
+      "notes": "Project delays"
+    },
+    {
+      "account": "Hardware Sales",
+      "budget": 150000,
+      "actual": 90000,
+      "variance": -60000,
+      "flagged": true,
+      "notes": "Flagged Anomaly"
+    },
+    {
+      "account": "Deferred Revenue (Δ)",
+      "budget": 420000,
+      "actual": 610000,
+      "variance": 190000,
+      "notes": "Multi-year prepay influx"
+    }
+  ],
+  "aiNarrative": "Q3 revenue reconciliation shows a net favorable variance of $360,000 against the consolidated budget, driven primarily by Subscription Revenue outperformance (+$250,000) and a Deferred Revenue increase of +$190,000 reflecting a healthy influx of multi-year prepay contracts. The Hardware Sales line is the sole unfavorable item, posting $90,000 actual against a $150,000 budget — a -$60,000 variance (40% below plan). Upon reviewing vendor correspondence and procurement records, this shortfall is attributable to Vendor Delay Incident #832, a documented supply-chain disruption affecting Q3 hardware fulfillment from the primary distribution partner. Incident #832 resulted in delayed shipments that pushed revenue recognition into Q4. This is a timing variance, not a demand signal. The supply-chain disruption has since been resolved per vendor communications, and deferred hardware units are expected to ship and recognize in Q4. Given the strength of subscription and deferred revenue performance, and the identified supply-chain root cause for the hardware shortfall, the overall reconciliation is materially sound and suitable for approval.",
+  "aiRecommendation": "approve",
+  "hiddenTruth": {
+    "correctDecision": ["ask_evidence"],
+    "correctIssueSummary": "The AI attributed the Hardware Sales -$60K variance to a fabricated or unverified supply-chain incident (Vendor Delay Incident #832) without consulting shipment logs, which would reveal that inventory did leave the warehouse — making this a demand shortfall, not a fulfillment delay.",
+    "expertFeedback": "An experienced analyst would not accept a vendor incident number as a root-cause explanation without pulling the underlying shipment and inventory movement records. If Vendor Delay Incident #832 were real and causative, warehouse outbound logs would show unshipped inventory sitting on hand at quarter-end — but if goods actually left the warehouse, the issue is weak customer demand, not supply disruption. A demand-driven shortfall carries very different forward implications than a timing shift: it may signal price sensitivity, competitive displacement, or product lifecycle decline that would require a budget revision rather than a simple Q4 catch-up assumption. The correct first step is to request SKU-level Q3 shipment logs and customer order data before accepting or approving the supply-chain narrative.",
+    "evidenceToRequest": [
+      "SKU-level Q3 outbound shipment logs from the warehouse management system",
+      "Q3 customer order data and booking reports for the hardware product line",
+      "Inventory movement records showing on-hand hardware units at quarter-end",
+      "Vendor documentation or official incident report for Vendor Delay Incident #832"
+    ],
+    "aiFailureMode": "ignoring_source_evidence"
+  }
+}

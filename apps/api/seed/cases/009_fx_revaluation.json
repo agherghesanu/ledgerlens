@@ -1,0 +1,67 @@
+{
+  "id": "009_fx_revaluation",
+  "title": "Transatlantic Freight Partners — EUR Receivables Revaluation",
+  "category": "FX Revaluation",
+  "difficulty": "medium",
+  "dataset": [
+    {
+      "account": "EUR Receivables — Gross Balance (€)",
+      "budget": 1240000,
+      "actual": 1240000,
+      "variance": 0,
+      "notes": "EUR-denominated trade receivables; no change in gross invoice balance Q2→Q3"
+    },
+    {
+      "account": "USD Equivalent — Q2 Period-End Rate (1.1200)",
+      "budget": 1388800,
+      "actual": 1388800,
+      "variance": 0,
+      "notes": "AI-applied rate: EUR/USD 1.1200 as of June 30"
+    },
+    {
+      "account": "USD Equivalent — Q3 Period-End Rate (1.0700)",
+      "budget": 1326800,
+      "actual": 1326800,
+      "variance": 0,
+      "notes": "Correct rate: EUR/USD 1.0700 as of September 30"
+    },
+    {
+      "account": "Receivables Overstatement (Stale Rate)",
+      "budget": 0,
+      "actual": 62000,
+      "variance": -62000,
+      "flagged": true,
+      "notes": "AI balance ($1,388,800) minus correct balance ($1,326,800); receivables overstated by $62,000"
+    },
+    {
+      "account": "FX Remeasurement Loss — OCI Impact",
+      "budget": 0,
+      "actual": -62000,
+      "variance": -62000,
+      "flagged": true,
+      "notes": "Required OCI charge under ASC 830-10-45; USD weakened vs EUR from Q2 to Q3 produces a remeasurement loss"
+    },
+    {
+      "account": "Accounts Receivable — Reported Balance (AI)",
+      "budget": 1326800,
+      "actual": 1388800,
+      "variance": -62000,
+      "flagged": true,
+      "notes": "AI-reported balance uses stale Q2 rate; correct Q3 balance is $1,326,800"
+    }
+  ],
+  "aiNarrative": "I reviewed the EUR-denominated trade receivables for Transatlantic Freight Partners as part of the Q3 balance sheet close. The gross EUR balance stands at €1,240,000, consistent with the volume of European lane bookings reported by operations. Applying the EUR/USD exchange rate from my reference data — 1.1200 — I calculate a USD equivalent of $1,388,800. Comparing this to the Q2 closing balance of $1,388,800, the receivable is flat quarter-over-quarter after accounting for new invoices issued and collections received during the period. The stability of the USD balance relative to the prior quarter is consistent with management's commentary that European receivables remained roughly constant. All invoices reviewed are within standard 45-day payment terms and no material credit concerns are flagged. I recommend approving the EUR receivables balance at $1,388,800.",
+  "aiRecommendation": "approve",
+  "hiddenTruth": {
+    "correctDecision": ["reject"],
+    "correctIssueSummary": "The AI applied the stale Q2 period-end rate (EUR/USD 1.1200) instead of the required Q3 period-end spot rate (EUR/USD 1.0700), overstating EUR receivables by $62,000 and omitting the corresponding FX remeasurement loss in OCI.",
+    "expertFeedback": "Under ASC 830-10-45-3, monetary assets denominated in a foreign currency must be remeasured at the current exchange rate at each balance sheet date — meaning the rate in effect on September 30 for a Q3 close, not the June 30 rate. The $62,000 overstatement is material relative to OCI and would require a correcting journal entry debiting OCI — FX Remeasurement Loss and crediting Accounts Receivable. An experienced reviewer would immediately verify the source and date of the FX rate used, compare it against a Bloomberg or central-bank spot rate for September 30, and reject the balance until it is restated at 1.0700. The AI's observation that the balance is 'flat quarter-over-quarter' is precisely the red flag: a genuine EUR/USD move of 500 basis points should produce a visible remeasurement effect, not a coincidentally flat USD balance.",
+    "evidenceToRequest": [
+      "September 30 period-end EUR/USD spot rate from Bloomberg, ECB, or the company's treasury rate sheet",
+      "Q3 FX rate schedule approved by treasury or the controller",
+      "Prior-quarter (Q2) remeasurement workpaper showing the June 30 rate of 1.1200 for comparison",
+      "General ledger detail for the OCI — FX Remeasurement account to confirm whether any loss entry was posted"
+    ],
+    "aiFailureMode": "overconfident_incomplete_data"
+  }
+}

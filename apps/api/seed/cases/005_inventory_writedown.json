@@ -1,0 +1,80 @@
+{
+  "id": "005_inventory_writedown",
+  "title": "Crestline Electronics Corp. — Electronics Inventory Impairment Assessment",
+  "category": "Inventory",
+  "difficulty": "hard",
+  "dataset": [
+    {
+      "account": "Finished Goods — Gen-5 Smart Display Units",
+      "budget": 1450000,
+      "actual": 1452300,
+      "variance": 2300,
+      "notes": "14-month average age; successor Gen-6 line announced Q1, launches Q3",
+      "flagged": false
+    },
+    {
+      "account": "Work-in-Process — Gen-5 Display Assemblies",
+      "budget": 420000,
+      "actual": 418600,
+      "variance": -1400,
+      "notes": "Partially assembled units; completion cost would increase exposure",
+      "flagged": false
+    },
+    {
+      "account": "Raw Materials — OLED Panels (Gen-5 spec)",
+      "budget": 310000,
+      "actual": 312100,
+      "variance": 2100,
+      "notes": "Spot market price down 28% YTD per component exchange data",
+      "flagged": false
+    },
+    {
+      "account": "Raw Materials — Gen-5 SoC Chipsets",
+      "budget": 95000,
+      "actual": 94700,
+      "variance": -300,
+      "notes": "Chipset prices declining in line with broader component market",
+      "flagged": false
+    },
+    {
+      "account": "NRV Estimate (AI model, prior-quarter pricing)",
+      "budget": 2275000,
+      "actual": 2277700,
+      "variance": 2700,
+      "notes": "AI-derived NRV uses Q4 pricing inputs; does not reflect YTD spot price decline",
+      "flagged": false
+    },
+    {
+      "account": "Carrying Value — Total Inventory at Cost",
+      "budget": 2275000,
+      "actual": 2277700,
+      "variance": 2700,
+      "notes": "Balance sheet carrying value; appears to equal AI NRV model output",
+      "flagged": false
+    },
+    {
+      "account": "Estimated NRV Adjustment (current spot pricing)",
+      "budget": 0,
+      "actual": 0,
+      "variance": 0,
+      "notes": "No write-down recorded; management asserts cost approximates NRV",
+      "flagged": true
+    }
+  ],
+  "aiNarrative": "I reviewed Crestline Electronics Corp.'s inventory schedule for the period ending March 31. Total inventory carrying value is $2,277,700 across finished goods ($1,452,300), work-in-process ($418,600), and raw materials ($406,800). To assess the lower-of-cost-or-NRV requirement under ASC 330, I applied the company's NRV model using the most recently available pricing inputs from Q4 of the prior year. My model yields an estimated NRV of $2,277,700 — precisely in line with the carrying value. Because cost equals NRV per my analysis, no write-down is required under ASC 330-10-35. The inventory balance is fairly stated and the balance sheet may be approved as presented. The minor variances between budget and actual across inventory categories are within normal fluctuation and do not indicate systemic valuation risk.",
+  "aiRecommendation": "approve",
+  "hiddenTruth": {
+    "correctDecision": ["escalate", "ask_evidence"],
+    "correctIssueSummary": "The AI modeled NRV using prior-quarter (stale) pricing data, ignoring three observable obsolescence indicators — 14-month inventory age, a successor product announcement, and a 28% YTD spot-price decline — that together signal carrying value materially exceeds current NRV.",
+    "expertFeedback": "An experienced reviewer would immediately flag that the AI's NRV model is anchored to Q4 pricing while the source data discloses a 28% year-to-date drop in component spot prices and a successor product launch next quarter — both are textbook ASC 330 obsolescence indicators. Under ASC 330-10-35-1, inventory must be written down to NRV whenever evidence indicates the goods will not recover their cost through normal sale; the threshold is evidence of impairment, not certainty of loss. The 14-month inventory age further compounds the risk: with a successor SKU launching imminently, sellthrough at historical prices is unlikely. A competent analyst would demand current spot-price quotes, post-announcement competitor pricing, and management's refreshed NRV model inputs before signing off — not accept a model that conveniently confirms the carrying value using outdated data.",
+    "evidenceToRequest": [
+      "Current spot price quotes for affected Gen-5 SKUs (OLED panels, SoC chipsets) from component exchanges or distributor price sheets",
+      "Competitor retail pricing for comparable products following the Gen-6 announcement",
+      "Inventory age report by SKU showing units older than 12 months",
+      "Management's NRV model with input assumptions, pricing vintage, and sensitivity analysis",
+      "Sales velocity data for Gen-5 finished goods over the past 90 days",
+      "Any write-down memos or impairment analyses prepared by the controller"
+    ],
+    "aiFailureMode": "overconfident_incomplete_data"
+  }
+}

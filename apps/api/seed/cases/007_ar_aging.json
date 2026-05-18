@@ -1,0 +1,75 @@
+{
+  "id": "007_ar_aging",
+  "title": "Meridian Parts & Supply Co. — Q3 Collections Forecast Approval",
+  "category": "Collections & AR",
+  "difficulty": "medium",
+  "dataset": [
+    {
+      "account": "AR — Current (0–30 days)",
+      "budget": 520000,
+      "actual": 498000,
+      "variance": -22000,
+      "notes": "Q3 current bucket; prior year: $441K"
+    },
+    {
+      "account": "AR — 30–60 Days",
+      "budget": 210000,
+      "actual": 224000,
+      "variance": -14000,
+      "notes": "Slight increase; prior year: $198K"
+    },
+    {
+      "account": "AR — 60–90 Days",
+      "budget": 85000,
+      "actual": 97000,
+      "variance": -12000,
+      "notes": "Modestly elevated; prior year: $79K"
+    },
+    {
+      "account": "AR — 90+ Days (Severely Aged)",
+      "budget": 85000,
+      "actual": 421000,
+      "variance": -336000,
+      "notes": "Prior year: $81K (8% of total AR); now 31% of total AR — $340K shift into severely aged bucket",
+      "flagged": true
+    },
+    {
+      "account": "Total Accounts Receivable",
+      "budget": 900000,
+      "actual": 1240000,
+      "variance": -340000,
+      "notes": "22% YoY growth vs. prior year total of $1,017K; growth driven almost entirely by 90+ day bucket",
+      "flagged": true
+    },
+    {
+      "account": "Revenue (Q3, P&L)",
+      "budget": 3800000,
+      "actual": 3990000,
+      "variance": 190000,
+      "notes": "5% favorable; YoY revenue growth +22%; accrual-basis; does not reflect cash collection timing"
+    },
+    {
+      "account": "Q3 Collections (Cash Received)",
+      "budget": 3850000,
+      "actual": 3310000,
+      "variance": -540000,
+      "notes": "Cash collections lagging revenue by $680K this quarter; cash conversion deteriorating",
+      "flagged": true
+    }
+  ],
+  "aiNarrative": "Meridian Parts & Supply Co. has delivered strong Q3 performance, with revenue of $3.99M coming in 5% above budget and 22% ahead of the prior year — a clear signal of healthy top-line momentum. Total accounts receivable of $1.24M reflects a proportional 22% YoY increase, consistent with the company's expanded customer base and higher invoicing volumes. Days Sales Outstanding (DSO) sits at approximately 28 days on a trailing-twelve-month basis, which is within the 25–35 day range typical for industrial distribution businesses of this scale. The collections forecast submitted by the AR team projects $3.85M in Q4 cash receipts, and the current AR balance provides sufficient coverage to support that target. Given the revenue growth trajectory and DSO within industry norms, the Q3 collections forecast appears reasonable and well-supported. I recommend approving the forecast.",
+  "aiRecommendation": "approve",
+  "hiddenTruth": {
+    "correctDecision": ["escalate", "flag_assumption"],
+    "correctIssueSummary": "The AI relied on aggregate AR growth and a trailing DSO metric to approve the forecast, entirely missing that the 90+ day bucket surged from 8% to 31% of total AR in a single quarter — a $340K concentration in severely aged receivables that signals deteriorating cash conversion and potential collectability risk.",
+    "expertFeedback": "An experienced AR analyst would immediately decompose the aging schedule rather than reviewing only the total AR balance. The 90+ day bucket jumping from $81K (8%) to $421K (31%) in one quarter is a red flag for either customer financial distress or unresolved billing disputes — neither of which is visible on the P&L, which records revenue on an accrual basis regardless of whether cash is collected. The $540K shortfall in Q3 cash collections versus budget further confirms that P&L revenue growth is decoupled from actual cash flow performance. Under ASC 310-10, this concentration of severely aged receivables requires evaluation for an allowance for doubtful accounts, and the Q4 collections forecast must be stress-tested against the probability of recovering those 90+ day balances before approval.",
+    "evidenceToRequest": [
+      "Full AR aging detail by customer for the 90+ day bucket",
+      "Customer correspondence or dispute logs for invoices outstanding beyond 90 days",
+      "Current allowance for doubtful accounts calculation and any reserve adequacy memo",
+      "Q4 collections forecast model with assumptions broken out by aging bucket",
+      "Prior-quarter collection rates on 90+ day balances to assess historical recovery"
+    ],
+    "aiFailureMode": "cashflow_vs_pnl"
+  }
+}

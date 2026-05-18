@@ -1,0 +1,67 @@
+{
+  "id": "002_saas_revenue_recognition",
+  "title": "Arcturus Cloud — 3-Year Enterprise License Recognition",
+  "category": "Revenue Recognition",
+  "difficulty": "hard",
+  "dataset": [
+    {
+      "account": "Q1 Revenue Recognized — Platform Access",
+      "budget": 36000,
+      "actual": 432000,
+      "variance": 396000,
+      "notes": "Budget = $12K/mo × 3 mo; AI recognized full $432K contract upfront",
+      "flagged": true
+    },
+    {
+      "account": "Q2 Revenue Recognized — Platform Access",
+      "budget": 36000,
+      "actual": 0,
+      "variance": -36000,
+      "notes": "Nothing left to recognize — full contract already booked in Q1",
+      "flagged": true
+    },
+    {
+      "account": "Q3 Revenue Recognized — Platform Access",
+      "budget": 36000,
+      "actual": 0,
+      "variance": -36000,
+      "notes": "Nothing left to recognize — full contract already booked in Q1"
+    },
+    {
+      "account": "Q4 Revenue Recognized — Platform Access",
+      "budget": 36000,
+      "actual": 0,
+      "variance": -36000,
+      "notes": "Nothing left to recognize — full contract already booked in Q1"
+    },
+    {
+      "account": "Deferred Revenue Balance (End of Q1)",
+      "budget": 396000,
+      "actual": 0,
+      "variance": -396000,
+      "notes": "Should reflect unearned portion of 33-month remaining service period",
+      "flagged": true
+    },
+    {
+      "account": "Total Contract Value (3-Year Enterprise License)",
+      "budget": 432000,
+      "actual": 432000,
+      "variance": 0,
+      "notes": "Upfront cash received January 1; single performance obligation — platform access over 36 months"
+    }
+  ],
+  "aiNarrative": "Arcturus Cloud received a $432,000 upfront payment in January under a 3-year enterprise platform license signed with a Fortune-500 client. Because the full contract consideration was received and the signed agreement is legally binding and non-refundable, the earnings process is substantially complete at contract inception. The platform was provisioned and made available to the client on January 1, confirming that Arcturus has fulfilled its obligation to deliver access. Accordingly, I am recognizing the full $432,000 in Q1 revenue. This treatment is consistent with the accelerated recognition approach appropriate when consideration is received in full and there are no significant future performance commitments beyond routine platform availability. Full-year Q1 revenue including this contract totals $612,000, which is $378,000 ahead of the $234,000 quarterly budget — a strong result that demonstrates effective enterprise sales execution. No deferred revenue liability is required given the non-refundable nature of the payment.",
+  "aiRecommendation": "approve",
+  "hiddenTruth": {
+    "correctDecision": ["reject", "escalate"],
+    "correctIssueSummary": "The AI recognized the entire $432,000 upfront payment as Q1 revenue, inflating the quarter by $396,000; under ASC 606 the single performance obligation (continuous platform access) must be satisfied ratably over the 36-month service period at $12,000 per month.",
+    "expertFeedback": "Under ASC 606-10-25-27, revenue for a performance obligation satisfied over time must be recognized as control transfers to the customer — here, ratably at $12,000 per month ($144,000 per year) across the 36-month contract term, not at the point of cash receipt. The non-refundable nature of the payment is irrelevant to the recognition pattern; it affects only the contract liability (deferred revenue) presentation, not the timing of earned revenue. At the end of Q1, Arcturus should carry a $396,000 deferred revenue liability representing the 33 months of platform access not yet delivered. Approving this entry as presented would overstate Q1 revenue by $396,000 and eliminate the corresponding deferred revenue balance, violating both ASC 606 and the matching principle.",
+    "evidenceToRequest": [
+      "Executed enterprise license agreement including the statement of work and service commencement date",
+      "Revenue recognition memo or 606 checklist prepared by the technical accounting team for this contract",
+      "General ledger detail for deferred revenue — Arcturus Cloud enterprise contracts (January period)",
+      "Prior-period revenue schedules showing monthly recognition pattern for comparable multi-year SaaS contracts"
+    ],
+    "aiFailureMode": "revenue_recognition_timing"
+  }
+}

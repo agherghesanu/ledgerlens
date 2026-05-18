@@ -1,0 +1,68 @@
+{
+  "id": "010_stock_based_comp",
+  "title": "Stellarpath Technologies — Performance Share Vesting Cliff Under-Accrual",
+  "category": "Stock-Based Compensation",
+  "difficulty": "easy",
+  "dataset": [
+    {
+      "account": "Q1-Y1 SBC Accrual (AI straight-line)",
+      "budget": 78750,
+      "actual": 78750,
+      "variance": 0,
+      "notes": "$1,260,000 grant ÷ 16 quarters; matches approved schedule"
+    },
+    {
+      "account": "Q2-Y3 Cumulative SBC Accrued to Date",
+      "budget": 708750,
+      "actual": 708750,
+      "variance": 0,
+      "notes": "9 quarters × $78,750; AI confirms match to equity rollforward"
+    },
+    {
+      "account": "Q3-Y3 SBC Accrual — AI Straight-Line",
+      "budget": 78750,
+      "actual": 78750,
+      "variance": 0,
+      "notes": "AI records routine quarterly accrual; no cliff adjustment"
+    },
+    {
+      "account": "Q3-Y3 Correct Catch-Up Accrual (ASC 718-10)",
+      "budget": 418750,
+      "actual": 78750,
+      "variance": -340000,
+      "flagged": true,
+      "notes": "Cliff probable as of Q3-Y3; $340,000 catch-up required plus $78,750 current quarter = $418,750 total Q3 charge"
+    },
+    {
+      "account": "Cumulative Under-Accrual at Q3-Y3",
+      "budget": 340000,
+      "actual": 0,
+      "variance": -340000,
+      "flagged": true,
+      "notes": "SBC understated by $340,000; catch-up journal entry not recorded"
+    },
+    {
+      "account": "Total Q3-Y3 SBC Expense Impact (Correct)",
+      "budget": 418750,
+      "actual": 78750,
+      "variance": -340000,
+      "flagged": true,
+      "notes": "Correct Q3 charge is $418,750; AI recorded only $78,750 — $340,000 understatement exceeds 5% of quarterly operating income"
+    }
+  ],
+  "aiNarrative": "I reviewed the Q3 Year 3 stock-based compensation accrual for the 150,000-share performance grant issued to senior engineering staff. Grant date fair value was $8.40 per share, yielding a total grant value of $1,260,000 amortized straight-line over the 4-year service period. This produces a quarterly accrual of $78,750 ($1,260,000 ÷ 16 quarters). The Q3 Year 3 journal entry — debit SBC Expense $78,750, credit Additional Paid-In Capital $78,750 — matches the approved amortization schedule exactly. Tracing to the equity rollforward, the cumulative SBC balance of $787,500 through Q3 Year 3 (10 quarters × $78,750) reconciles to the APIC sub-ledger without exception. No new grants were issued in the quarter and no forfeitures have been recorded. The accrual is mechanically correct, consistently applied, and reconciles to the supporting equity schedule. I recommend approving the Q3 SBC expense entry.",
+  "aiRecommendation": "approve",
+  "hiddenTruth": {
+    "correctDecision": ["reject", "flag_assumption"],
+    "correctIssueSummary": "The AI ignored a material cliff vesting event: management confirmed in Q3 Year 3 that performance targets will be met, triggering an ASC 718-10 requirement to catch up $340,000 of previously unrecognized SBC expense in the current quarter.",
+    "expertFeedback": "Under ASC 718-10-25, when a performance condition becomes probable of achievement, the entity must recognize cumulative compensation cost as if the award had been probable from the grant date. The 3-year cliff structure means no expense would have been accrued at all under a performance-condition-only model — but once probable, the full catch-up hits the current period. Even under the AI's straight-line approach, confirming probability in Q3 Year 3 requires a $340,000 catch-up entry on top of the normal $78,750 quarterly charge, making the correct Q3 SBC expense $418,750. An experienced reviewer would pull the performance scorecard or board memo confirming target achievement, quantify the catch-up, and assess materiality — $340,000 exceeds 5% of quarterly operating income and cannot be deferred. The AI's failure to check performance condition status is a textbook ASC 718-10 probability reassessment oversight.",
+    "evidenceToRequest": [
+      "Board or compensation committee memo confirming performance target achievement as of Q3 Year 3",
+      "Performance scorecard or management certification of metric attainment",
+      "Original grant agreement specifying performance conditions and cliff vesting schedule",
+      "Prior-period SBC workpapers showing whether performance probability was assessed each quarter",
+      "Quarterly operating income figure to quantify materiality of the $340,000 catch-up"
+    ],
+    "aiFailureMode": "materiality_ignored"
+  }
+}

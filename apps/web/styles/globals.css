@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: 59 130 246;   /* blue-500 */
+    --color-sidebar: 249 250 251;  /* gray-50 */
+  }
+
+  body {
+    @apply text-gray-900 antialiased;
+  }
+}
+
+@layer utilities {
+  .bg-primary { background-color: rgb(var(--color-primary)); }
+  .text-primary { color: rgb(var(--color-primary)); }
+  .bg-sidebar { background-color: rgb(var(--color-sidebar)); }
+}

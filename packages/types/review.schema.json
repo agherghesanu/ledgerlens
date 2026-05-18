@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ledgerlens.dev/schemas/review.schema.json",
+  "title": "Review",
+  "description": "A junior analyst's submission for a case",
+  "type": "object",
+  "required": ["id", "case_id", "user_id", "action", "reasoning", "time_spent_seconds", "submitted_at"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "case_id": {
+      "type": "string",
+      "pattern": "^[0-9]{3}_[a-z0-9_]+$",
+      "description": "Foreign key to Case.id"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "action": {
+      "type": "string",
+      "enum": ["approve", "reject", "escalate", "ask_evidence", "flag_assumption"],
+      "description": "The action the analyst chose from the action bar"
+    },
+    "reasoning": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The analyst's written reasoning (free text)"
+    },
+    "time_spent_seconds": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Elapsed seconds from case load to submission"
+    },
+    "submitted_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "examples": [
+    {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "case_id": "001_marketing_variance",
+      "user_id": "usr_001",
+      "action": "flag_assumption",
+      "reasoning": "The AI has applied a quarterly run-rate to what appears to be a one-time event. The FinanceConnect 2024 sponsorship of $240K is categorised under Conference — typically annual. Before approving I would request the vendor invoice and prior-year GL entries to confirm this is non-recurring. Projecting $1.45M full-year marketing from Q1 inflated by a one-time item would materially overstate the budget.",
+      "time_spent_seconds": 847,
+      "submitted_at": "2024-10-15T14:32:00Z"
+    }
+  ]
+}

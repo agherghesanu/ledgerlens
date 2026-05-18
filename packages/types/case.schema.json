@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ledgerlens.dev/schemas/case.schema.json",
+  "title": "Case",
+  "description": "A finance scenario presented to the analyst for review. hiddenTruth is never sent to the client.",
+  "type": "object",
+  "$defs": {
+    "Action": {
+      "type": "string",
+      "enum": ["approve", "reject", "escalate", "ask_evidence", "flag_assumption"]
+    },
+    "FailureMode": {
+      "type": "string",
+      "enum": [
+        "one_off_as_recurring",
+        "ignoring_source_evidence",
+        "overconfident_incomplete_data",
+        "wrong_cost_category",
+        "cashflow_vs_pnl",
+        "accrual_vs_cash",
+        "materiality_ignored",
+        "revenue_recognition_timing"
+      ]
+    },
+    "DataRow": {
+      "type": "object",
+      "description": "One row of the tabular financial dataset shown to the analyst",
+      "required": ["account", "budget", "actual", "variance"],
+      "additionalProperties": false,
+      "properties": {
+        "account": { "type": "string" },
+        "budget":   { "type": "number", "description": "Budgeted amount in USD" },
+        "actual":   { "type": "number", "description": "Actual amount in USD" },
+        "variance": { "type": "number", "description": "actual − budget; positive = favorable" },
+        "notes":    { "type": "string" },
+        "flagged":  { "type": "boolean", "description": "AI has flagged this row as anomalous" }
+      }
+    },
+    "HiddenTruth": {
+      "type": "object",
+      "description": "Scoring ground-truth — never exposed to the analyst",
+      "required": [
+        "correctDecision",
+        "correctIssueSummary",
+        "expertFeedback",
+        "evidenceToRequest",
+        "aiFailureMode"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "correctDecision": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Action" },
+          "minItems": 1,
+          "description": "The action(s) a competent analyst should take"
+        },
+        "correctIssueSummary": {
+          "type": "string",
+          "description": "One sentence: what the AI got wrong"
+        },
+        "expertFeedback": {
+          "type": "string",
+          "description": "3–4 sentences: what an experienced analyst would notice and do differently"
+        },
+        "evidenceToRequest": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "description": "Specific documents or data an expert would pull before deciding"
+        },
+        "aiFailureMode": { "$ref": "#/$defs/FailureMode" }
+      }
+    }
+  },
+  "required": [
+    "id",
+    "title",
+    "category",
+    "difficulty",
+    "dataset",
+    "aiNarrative",
+    "aiRecommendation",
+    "hiddenTruth"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[0-9]{3}_[a-z0-9_]+$",
+      "description": "Zero-padded number + snake_case slug, e.g. 001_marketing_variance"
+    },
+    "title":    { "type": "string" },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Revenue Recognition",
+        "Variance Analysis",
+        "Reconciliation",
+        "Payroll & Accruals",
+        "Inventory",
+        "Lease Accounting",
+        "Collections & AR",
+        "CapEx vs OpEx",
+        "FX Revaluation",
+        "Stock-Based Compensation"
+      ]
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": ["easy", "medium", "hard"]
+    },
+    "dataset": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/DataRow" },
+      "minItems": 4,
+      "maxItems": 8
+    },
+    "aiNarrative": {
+      "type": "string",
+      "description": "The AI-generated analysis shown to the analyst — sounds confident, contains the hidden mistake"
+    },
+    "aiRecommendation": {
+      "$ref": "#/$defs/Action",
+      "description": "The action the AI recommends (often wrong)"
+    },
+    "hiddenTruth": { "$ref": "#/$defs/HiddenTruth" }
+  },
+  "examples": [
+    {
+      "id": "001_marketing_variance",
+      "title": "Northgate Advisory — Q1 Marketing Budget Variance",
+      "category": "Variance Analysis",
+      "difficulty": "easy",
+      "dataset": [
+        { "account": "Recurring Digital Marketing",           "budget": 60000,  "actual": 61200,  "variance": 1200,   "notes": "On track" },
+        { "account": "Annual Industry Conference Sponsorship","budget": 0,      "actual": 240000, "variance": -240000,"flagged": true, "notes": "FinanceConnect 2024" },
+        { "account": "Paid Social & SEM",                    "budget": 45000,  "actual": 43800,  "variance": 1200   },
+        { "account": "Events & Hospitality",                 "budget": 15000,  "actual": 17500,  "variance": -2500  },
+        { "account": "Total Q1 Marketing Spend",             "budget": 120000, "actual": 362500, "variance": -242500,"flagged": true }
+      ],
+      "aiNarrative": "Q1 marketing spend totalled $362,500 against a $120,000 budget — a $242,500 unfavorable variance (202%). The primary driver is a $240,000 Conference Sponsorship entry. Analysing the trailing 12-month marketing ledger, the company has historically maintained consistent monthly marketing investment in the $80,000–$120,000 range. This Q1 pattern is consistent with elevated brand-building activity and should be modelled as a recurring quarterly spend of ~$90,600, projecting full-year marketing at approximately $1,450,000. Digital and social channels are performing within 3% of budget and require no corrective action.",
+      "aiRecommendation": "approve",
+      "hiddenTruth": {
+        "correctDecision": ["flag_assumption", "ask_evidence"],
+        "correctIssueSummary": "The AI misclassified a one-time annual conference sponsorship as recurring quarterly spend, inflating the projected full-year marketing budget by ~$720,000.",
+        "expertFeedback": "An experienced analyst separates one-time items from recurring operating costs before projecting run-rates. The $240K FinanceConnect sponsorship is non-recurring — no prior-period GL entry exists at this magnitude. Annualising Q1 total spend ($362.5K × 4 = $1.45M) quadruples the sponsorship cost in the forecast. The correct full-year marketing estimate is approximately $481,500 (recurring Q1 spend $122.5K × 4 plus one-time $240K), not $1,450,000.",
+        "evidenceToRequest": [
+          "Vendor invoice for FinanceConnect 2024 sponsorship",
+          "Prior-year GL entries for conference/sponsorship line items",
+          "Approved annual marketing budget distinguishing recurring vs. one-time spend"
+        ],
+        "aiFailureMode": "one_off_as_recurring"
+      }
+    }
+  ]
+}

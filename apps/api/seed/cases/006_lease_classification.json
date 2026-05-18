@@ -1,0 +1,69 @@
+{
+  "id": "006_lease_classification",
+  "title": "FreshMart Grocery Co. — Equipment Lease Classification",
+  "category": "Lease Accounting",
+  "difficulty": "hard",
+  "dataset": [
+    {
+      "account": "Lease Term vs. Useful Economic Life",
+      "budget": 96,
+      "actual": 84,
+      "variance": -12,
+      "notes": "Asset useful life: 96 months (8 yrs); Lease term: 84 months (7 yrs) = 87.5% of asset life — exceeds 75% finance-lease threshold under ASC 842-20-25-2",
+      "flagged": true
+    },
+    {
+      "account": "Monthly Lease Payment",
+      "budget": 8500,
+      "actual": 8500,
+      "variance": 0,
+      "notes": "Fixed monthly payment; AI basis for operating-lease classification"
+    },
+    {
+      "account": "Total Undiscounted Lease Payments",
+      "budget": 510000,
+      "actual": 714000,
+      "variance": -204000,
+      "notes": "Budget = PV at 6% IBR ($510K); Actual = undiscounted total (84 × $8,500); gap reflects time-value discount",
+      "flagged": true
+    },
+    {
+      "account": "Right-of-Use Asset (Finance Lease)",
+      "budget": 510000,
+      "actual": 0,
+      "variance": -510000,
+      "notes": "Required on balance sheet under finance-lease treatment; AI classified as operating, keeping asset off B/S",
+      "flagged": true
+    },
+    {
+      "account": "Lease Liability (Finance Lease)",
+      "budget": 510000,
+      "actual": 0,
+      "variance": -510000,
+      "notes": "~$510K liability omitted under operating-lease mis-classification; understates leverage ratios",
+      "flagged": true
+    },
+    {
+      "account": "Annual P&L Impact — Interest vs. Rent Expense",
+      "budget": 36780,
+      "actual": 102000,
+      "variance": 65220,
+      "notes": "Finance lease: Year-1 interest ≈ $30,600 + amortization ≈ $72,857 = $103,457 vs. straight-line rent $102,000/yr; front-loading effect understated by AI"
+    }
+  ],
+  "aiNarrative": "I reviewed the refrigeration equipment lease for FreshMart Grocery Co. The agreement calls for 84 monthly payments of $8,500, yielding an annual cash outflow of $102,000. To assess lease classification under ASC 842, I evaluated the present value of lease payments relative to the fair value of the underlying asset. Using an incremental borrowing rate of 6%, the present value of the payment stream is approximately $510,000. The equipment's appraised fair value is $890,000, meaning the PV of payments represents roughly 57% of fair value — well below the 90% bright-line threshold that would indicate the lease transfers substantially all economic benefits of the asset. Additionally, title does not transfer at lease end and no bargain purchase option exists. The monthly payment of $8,500 is modest in relation to the asset's overall value, consistent with an operating arrangement where the lessor retains meaningful residual interest. Based on this analysis, I recommend classifying this lease as an operating lease. Under that treatment, FreshMart will record a straight-line rent expense of $102,000 per year with no material balance sheet impact. No right-of-use asset or lease liability capitalization is required beyond the standard operating-lease ROU asset, which management may elect to exclude from leverage covenant calculations per the credit agreement. This classification is appropriate and the lease should be approved as presented.",
+  "aiRecommendation": "approve",
+  "hiddenTruth": {
+    "correctDecision": ["reject"],
+    "correctIssueSummary": "The AI ignored the lease-term-to-economic-life criterion under ASC 842-20-25-2: the 84-month lease covers 87.5% of the asset's 96-month useful life, which exceeds the 75% threshold that mandates finance-lease classification, regardless of the PV-to-fair-value ratio.",
+    "expertFeedback": "ASC 842-20-25-2 establishes five independent criteria, any one of which triggers finance-lease classification; satisfying only a single criterion is sufficient. The AI correctly evaluated the 90% fair-value criterion and found it unmet, but stopped there without testing criterion (c): whether the lease term is for the major part of the remaining economic life of the underlying asset. The FASB bright line for 'major part' is 75% of remaining economic life — FreshMart's 84-month lease against an 8-year (96-month) asset life yields 87.5%, clearly above the threshold. Finance-lease treatment requires recognizing a right-of-use asset and a corresponding lease liability of approximately $510,000, materially increasing reported leverage and altering amortization vs. interest expense timing on the income statement. Approving the operating-lease classification would result in a ~$510,000 balance-sheet understatement and could breach debt covenants that include operating-lease liabilities in leverage calculations.",
+    "evidenceToRequest": [
+      "Original lease agreement including commencement date, lease term, and any renewal or purchase options",
+      "Manufacturer or appraiser documentation supporting the 8-year useful economic life of the refrigeration equipment",
+      "Company incremental borrowing rate support (credit facility terms or treasury memo) used to discount lease payments",
+      "Debt covenant compliance certificate to assess whether finance-lease liabilities would trigger any leverage ratio breach",
+      "Prior-year lease schedule or lease abstract prepared by external auditors for comparative classification"
+    ],
+    "aiFailureMode": "wrong_cost_category"
+  }
+}

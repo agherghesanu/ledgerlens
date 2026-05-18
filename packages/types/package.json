@@ -1,0 +1,12 @@
+{
+  "name": "@ledgerlens/types",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./index.ts",
+  "scripts": {
+    "generate": "node generate.mjs"
+  },
+  "devDependencies": {
+    "json-schema-to-typescript": "^15.0.0"
+  }
+}
