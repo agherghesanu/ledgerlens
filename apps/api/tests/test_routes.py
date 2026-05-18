@@ -1,0 +1,116 @@
+import pytest
+import pytest_asyncio
+from unittest.mock import patch, AsyncMock
+from httpx import AsyncClient, ASGITransport
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from sqlalchemy.pool import StaticPool
+
+from app.main import app
+from app.db.session import Base, get_session
+from app.models.case import Case
+from app.models.review import Review
+from app.models.score import Score
+
+
+# ── Fixtures ──────────────────────────────────────────────────────────────────
+
+@pytest_asyncio.fixture
+async def db_engine():
+    engine = create_async_engine(
+        "sqlite+aiosqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield engine
+    await engine.dispose()
+
+
+@pytest_asyncio.fixture
+async def client(db_engine):
+    factory = async_sessionmaker(db_engine, expire_on_commit=False)
+
+    async def override_get_session():
+        async with factory() as s:
+            yield s
+
+    app.dependency_overrides[get_session] = override_get_session
+
+    with patch("app.main.seed_if_empty", new_callable=AsyncMock), \
+         patch("app.main.engine", new=db_engine):
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            yield ac
+
+    app.dependency_overrides.clear()
+
+
+async def _insert_case(db_engine, **overrides) -> Case:
+    defaults = dict(
+        id="001_test",
+        title="Marketing Variance",
+        category="Variance Analysis",
+        difficulty="easy",
+        dataset=[{"account": "Revenue", "budget": 100, "actual": 90, "variance": -10}],
+        ai_narrative="AI analysis here.",
+        ai_recommendation="approve",
+        hidden_truth={
+            "correctDecision": ["flag_assumption"],
+            "correctIssueSummary": "One-off treated as recurring.",
+            "expertFeedback": "An expert would catch this.",
+            "evidenceToRequest": ["GL export"],
+            "aiFailureMode": "one_off_as_recurring",
+        },
+    )
+    defaults.update(overrides)
+    factory = async_sessionmaker(db_engine, expire_on_commit=False)
+    async with factory() as s:
+        case = Case(**defaults)
+        s.add(case)
+        await s.commit()
+    return case
+
+
+# ── Cases ─────────────────────────────────────────────────────────────────────
+
+async def test_list_cases_empty(client):
+    resp = await client.get("/cases")
+    assert resp.status_code == 200
+    assert resp.json() == []
+
+
+async def test_list_cases_returns_cases(client, db_engine):
+    await _insert_case(db_engine)
+    resp = await client.get("/cases")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data) == 1
+    assert data[0]["id"] == "001_test"
+    assert "hidden_truth" not in data[0]
+    assert "ai_narrative" not in data[0]   # list view is slim
+
+
+async def test_list_cases_filter_difficulty(client, db_engine):
+    await _insert_case(db_engine, id="001_easy", difficulty="easy")
+    await _insert_case(db_engine, id="002_hard", difficulty="hard")
+    resp = await client.get("/cases?difficulty=hard")
+    assert resp.status_code == 200
+    ids = [c["id"] for c in resp.json()]
+    assert ids == ["002_hard"]
+
+
+async def test_get_case_not_found(client):
+    resp = await client.get("/cases/999_missing")
+    assert resp.status_code == 404
+
+
+async def test_get_case_strips_hidden_truth(client, db_engine):
+    await _insert_case(db_engine)
+    resp = await client.get("/cases/001_test")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert "hidden_truth" not in body
+    assert body["title"] == "Marketing Variance"
+    assert body["dataset"][0]["account"] == "Revenue"
