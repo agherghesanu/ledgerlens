@@ -7,19 +7,17 @@ export function CaseTable({ cases = [] }: { cases?: Case[] }) {
       <thead>
         <tr className="border-b text-left text-gray-500">
           <th className="py-2 pr-4">Case</th>
-          <th className="py-2 pr-4">Domain</th>
+          <th className="py-2 pr-4">Category</th>
           <th className="py-2 pr-4">Difficulty</th>
-          <th className="py-2">Status</th>
         </tr>
       </thead>
       <tbody>
         {cases.map((c) => (
           <tr key={c.id} className="border-b hover:bg-gray-50">
             <td className="py-3 pr-4 font-medium">{c.title}</td>
-            <td className="py-3 pr-4">{c.domain}</td>
-            <td className="py-3 pr-4">{c.difficulty}</td>
-            <td className="py-3">
-              <Chip label={c.status} variant={c.status === "completed" ? "success" : "default"} />
+            <td className="py-3 pr-4">{c.category}</td>
+            <td className="py-3 pr-4">
+              <Chip label={c.difficulty} />
             </td>
           </tr>
         ))}

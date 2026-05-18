@@ -1,11 +1,12 @@
-import { ScoreCard } from "@/components/eval/ScoreCard";
-import { FeedbackPanel } from "@/components/eval/FeedbackPanel";
-
-export default function EvaluationPage({ params }: { params: { id: string } }) {
+export default async function EvaluationPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <ScoreCard reviewId={params.id} />
-      <FeedbackPanel reviewId={params.id} />
+    <div className="max-w-4xl mx-auto">
+      <p className="text-text-mute cap">Evaluation {id}</p>
     </div>
-  );
+  )
 }
