@@ -10,7 +10,7 @@ from app.services.llm import complete_json
 
 logger = logging.getLogger(__name__)
 
-_MODEL = "gemini-2.5-flash"
+_MODEL = "gemini-3.1-flash-lite"
 
 CATEGORIES = [
     "Revenue Recognition",

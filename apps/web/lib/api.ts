@@ -100,6 +100,7 @@ export interface ProfileAggregate {
   patterns: PatternItem[]
   focus_category: string | null
   history: HistoryRow[]
+  peer_percentile: number | null
 }
 
 // ── Fetchers ──────────────────────────────────────────────────────────────────
@@ -164,6 +165,8 @@ export type CustomCaseCreate = {
   category?: string
   difficulty?: 'easy' | 'medium' | 'hard'
   scenario_text: string
+  ai_narrative?: string
+  ai_recommendation?: string
   dataset?: object[]
   correct_decision?: string
   correct_issue_summary?: string

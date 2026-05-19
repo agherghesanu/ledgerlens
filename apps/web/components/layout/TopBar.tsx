@@ -20,7 +20,7 @@ function getConfig(pathname: string): BarConfig {
   if (pathname.startsWith('/evaluation'))
     return { showSearch: false, title: 'Evaluation Feedback' }
   if (pathname === '/settings')
-    return { showSearch: true, title: 'Settings', searchPh: 'Search settings...' }
+    return { showSearch: false, title: 'Settings' }
   return { showSearch: false, title: 'LedgerLens' }
 }
 

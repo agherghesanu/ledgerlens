@@ -22,12 +22,6 @@ const SlidersIcon = () => (
     <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>
   </svg>
 )
-const KeyIcon = ({ size = 16 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 2 9 14M15 2l-5.5 5.5M20 3l-5.5 5.5"/>
-    <circle cx="7" cy="17" r="5"/>
-  </svg>
-)
 const BellIcon = () => (
   <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
@@ -122,96 +116,6 @@ function LabelBlock({ label, desc }: { label: React.ReactNode; desc: string }) {
     <div className="min-w-0">
       <div className="text-sm font-medium" style={{ color: 'var(--text)' }}>{label}</div>
       <div className="text-xs mt-0.5 leading-relaxed" style={{ color: 'var(--text-dim)' }}>{desc}</div>
-    </div>
-  )
-}
-
-// ── API key input row ──────────────────────────────────────────────────────────
-
-function ApiKeyRow({
-  label, storageKey, badge, badgeVariant = 'amber', placeholder = 'Enter API key',
-}: {
-  label: string
-  storageKey: string
-  badge: React.ReactNode
-  badgeVariant?: 'green' | 'amber' | 'indigo'
-  placeholder?: string
-}) {
-  const [stored, setStored] = useSetting<string>(storageKey, '')
-  const [draft, setDraft] = useState(stored)
-  const [show, setShow] = useState(false)
-  const hasKey = stored.trim().length > 0
-  const dirty = draft !== stored
-
-  function save() {
-    setStored(draft.trim())
-  }
-
-  return (
-    <div
-      className="px-5 py-4 flex flex-col gap-2.5"
-      style={{ borderBottom: '1px solid var(--border-dim)' }}
-    >
-      <div className="flex items-center justify-between gap-4">
-        <span className="cap">{label}</span>
-        {badge}
-      </div>
-
-      {/* Input row */}
-      <div
-        className="grid gap-2"
-        style={{ gridTemplateColumns: hasKey ? '1fr auto auto' : '1fr auto' }}
-      >
-        <div
-          className="flex items-center gap-2 rounded-lg border px-3"
-          style={{
-            background: 'var(--card-2)',
-            borderColor: 'var(--border)',
-            height: 38,
-          }}
-        >
-          <KeyIcon size={12} />
-          <input
-            type={show ? 'text' : 'password'}
-            value={draft}
-            placeholder={placeholder}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && save()}
-            className="flex-1 bg-transparent border-none outline-none font-mono text-sm"
-            style={{ color: 'var(--text)', minWidth: 0 }}
-          />
-        </div>
-
-        {hasKey && (
-          <button
-            type="button"
-            title={show ? 'Hide key' : 'Show key'}
-            onClick={() => setShow((v) => !v)}
-            className="h-[38px] px-3 rounded-lg border flex items-center justify-center cursor-pointer"
-            style={{ background: 'var(--card-2)', borderColor: 'var(--border)', color: 'var(--text-dim)' }}
-          >
-            {show ? <EyeOffIcon /> : <EyeIcon />}
-          </button>
-        )}
-
-        <button
-          type="button"
-          onClick={save}
-          disabled={!dirty && hasKey}
-          className="h-[38px] px-4 rounded-lg font-mono text-sm font-medium border cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-          style={
-            dirty
-              ? { background: 'var(--indigo)', color: 'var(--indigo-dark)', borderColor: 'var(--indigo)' }
-              : { background: 'var(--card-2)', color: 'var(--text-dim)', borderColor: 'var(--border)' }
-          }
-        >
-          {hasKey && !dirty ? 'Saved' : hasKey ? 'Update' : 'Save'}
-        </button>
-      </div>
-
-      <p className="text-xs m-0" style={{ color: 'var(--text-mute)' }}>
-        Stored locally in your browser only — never sent to the LedgerLens backend.
-      </p>
     </div>
   )
 }
@@ -578,8 +482,7 @@ const NAV_SECTIONS = [
   { id: 'org',      label: 'Organization',      icon: <BellIcon /> },
   { id: 'general',  label: 'General Settings',  icon: <SlidersIcon /> },
   { id: 'billing',  label: 'Billing & Plans',   icon: <Sparkles size={16} /> },
-  { id: 'api',      label: 'API Keys',           icon: <KeyIcon /> },
-  { id: 'notifs',   label: 'Notifications',      icon: <BellIcon /> },
+{ id: 'notifs',   label: 'Notifications',      icon: <BellIcon /> },
   { id: 'security', label: 'Security',           icon: <AlertTriIcon /> },
 ] as const
 type SectionId = typeof NAV_SECTIONS[number]['id']
@@ -773,39 +676,6 @@ export default function SettingsPage() {
               accountType={user?.account_type ?? 'individual'}
               organizationId={user?.organization_id ?? null}
             />
-          )}
-
-          {/* ── API KEYS ───────────────────────────────────────────────────── */}
-          {section === 'api' && (
-            <SettingsCard
-              title="API Management"
-              sub="Configure external integrations and access tokens."
-              icon={<KeyIcon />}
-            >
-              <ApiKeyRow
-                label="OPENAI API KEY"
-                storageKey="openai_api_key"
-                badge={
-                  <Chip variant="green">
-                    <CheckIcon size={10} /> CONNECTED
-                  </Chip>
-                }
-                badgeVariant="green"
-                placeholder="sk-proj-…"
-              />
-              <div className="opacity-50 pointer-events-none">
-                <ApiKeyRow
-                  label="ELEVENLABS API KEY"
-                  storageKey="elevenlabs_api_key"
-                  badge={
-                    <span className="flex items-center gap-1.5">
-                      <Chip variant="amber">COMING SOON</Chip>
-                    </span>
-                  }
-                  placeholder="Enter API key"
-                />
-              </div>
-            </SettingsCard>
           )}
 
           {/* ── NOTIFICATIONS ───────────────────────────────────────────────── */}

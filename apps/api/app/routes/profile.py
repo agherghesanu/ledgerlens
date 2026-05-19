@@ -91,6 +91,9 @@ class ProfileAggregate(BaseModel):
     # Full history (all scored reviews, newest first)
     history: list[HistoryRow]
 
+    # Peer percentile — % of other users the current user outperforms (0–100)
+    peer_percentile: float | None
+
 
 # ── Pure aggregator helpers (importable for testing) ──────────────────────────
 
@@ -358,7 +361,7 @@ async def get_profile(
                 break
     over_trust_index = compute_over_trust_index(ota_scores)
 
-    # ── 5. Strength / weakness patterns ──────────────────────────────────────
+    # ── 5. Strength / weakness patterns + peer percentile ────────────────────
     # User's last-10 criterion means
     user_criterion_scores: dict[str, list[float]] = {k: [] for k in ALL_CRITERIA}
     for _, score, _ in all_rows[:10]:
@@ -373,10 +376,17 @@ async def get_profile(
         if vs
     }
 
-    # Global means and stdevs across ALL scored reviews (all users)
+    # Global query — all users' scores (no user_id filter)
+    global_result = await session.execute(
+        select(Review.user_id, Score.total, Score.criteria)
+        .join(Score, Score.review_id == Review.id)
+    )
+    global_rows = global_result.all()
+
+    # Global criterion means/stdevs across all users
     global_criterion_scores: dict[str, list[float]] = {k: [] for k in ALL_CRITERIA}
-    for _, score, _ in all_rows:
-        for c in score.criteria:
+    for _, _, criteria in global_rows:
+        for c in criteria:
             name = c["name"]
             if name in global_criterion_scores:
                 global_criterion_scores[name].append(float(c["score"]))
@@ -396,6 +406,18 @@ async def get_profile(
         global_criterion_means,
         global_criterion_stdevs,
     )
+
+    # Peer percentile — rank current user against all other users by mean accuracy
+    peer_percentile: float | None = None
+    if accuracy is not None:
+        other_user_totals: dict[str, list[float]] = {}
+        for uid, total, _ in global_rows:
+            if uid != current_user.id:
+                other_user_totals.setdefault(uid, []).append(total)
+        if other_user_totals:
+            other_means = [sum(vs) / len(vs) for vs in other_user_totals.values()]
+            count_below = sum(1 for m in other_means if m < accuracy)
+            peer_percentile = round(count_below / len(other_means) * 100, 1)
 
     # ── 6. Recommended focus — weakest skill category ─────────────────────────
     focus_category: str | None = None
@@ -425,4 +447,5 @@ async def get_profile(
         patterns=patterns,
         focus_category=focus_category,
         history=history,
+        peer_percentile=peer_percentile,
     )

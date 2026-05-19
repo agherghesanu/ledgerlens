@@ -8,6 +8,7 @@ from app.db.session import get_session
 from app.models.user import User
 from app.models.organization import Organization
 from app.models.custom_case import CustomCase
+from app.models.case import Case
 from app.models.review import Review
 from app.models.score import Score
 from app.core.security import get_current_user
@@ -31,6 +32,8 @@ class CustomCaseCreate(BaseModel):
     category: str = "Custom"
     difficulty: str = "medium"
     scenario_text: str
+    ai_narrative: str = ""
+    ai_recommendation: str = "approve"
     dataset: list = []
     correct_decision: str = "escalate"
     correct_issue_summary: str = ""
@@ -138,7 +141,7 @@ async def create_custom_case(
     if current_user.account_type != "institutional_admin" or current_user.organization_id != org_id:
         raise HTTPException(status_code=403, detail="Only org admins can create cases")
 
-    case = CustomCase(
+    custom = CustomCase(
         organization_id=org_id,
         created_by=current_user.id,
         title=body.title,
@@ -149,10 +152,31 @@ async def create_custom_case(
         correct_decision=body.correct_decision,
         correct_issue_summary=body.correct_issue_summary,
     )
-    db.add(case)
+    db.add(custom)
+    await db.flush()  # get custom.id
+
+    # Mirror into cases table so existing review/scoring machinery works
+    ai_narrative = body.ai_narrative or body.scenario_text
+    db.add(Case(
+        id=custom.id,
+        organization_id=org_id,
+        title=body.title,
+        category=body.category,
+        difficulty=body.difficulty,
+        dataset=body.dataset,
+        ai_narrative=ai_narrative,
+        ai_recommendation=body.ai_recommendation,
+        hidden_truth={
+            "correctDecision": [body.correct_decision],
+            "correctIssueSummary": body.correct_issue_summary,
+            "expertFeedback": "",
+            "evidenceToRequest": [],
+            "aiFailureMode": "custom",
+        },
+    ))
     await db.commit()
-    await db.refresh(case)
-    return case
+    await db.refresh(custom)
+    return custom
 
 
 @router.get("/{org_id}/cases", response_model=list[CustomCaseResponse])

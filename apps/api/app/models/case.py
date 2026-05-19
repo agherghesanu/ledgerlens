@@ -13,6 +13,7 @@ class Case(Base):
     created_at: Mapped[datetime | None] = mapped_column(
         DateTime, nullable=True, default=lambda: datetime.now(UTC).replace(tzinfo=None)
     )
+    organization_id: Mapped[str | None] = mapped_column(String, nullable=True, default=None, index=True)
     title: Mapped[str] = mapped_column(String, nullable=False)
     category: Mapped[str] = mapped_column(String, nullable=False)
     difficulty: Mapped[str] = mapped_column(String, nullable=False)

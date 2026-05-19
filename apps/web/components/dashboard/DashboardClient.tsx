@@ -109,11 +109,6 @@ export function DashboardClient() {
                   </span>
                 ) : undefined
               }
-              trailing={
-                stats?.progress && stats.progress.length > 0 ? (
-                  <Sparkline points={stats.progress.map((p) => p.accuracy)} />
-                ) : undefined
-              }
             />
 
             <StatCard
@@ -159,24 +154,3 @@ export function DashboardClient() {
   )
 }
 
-// ── Inline sparkline (too small to extract) ────────────────────────────────────
-function Sparkline({ points }: { points: number[] }) {
-  const max = Math.max(...points, 1)
-  return (
-    <div className="flex items-end gap-1" style={{ height: 32 }}>
-      {points.map((h, i) => (
-        <span
-          key={i}
-          style={{
-            display: 'block',
-            width: 8,
-            height: (h / max) * 32,
-            background: 'var(--indigo)',
-            borderRadius: 2,
-            opacity: 0.85,
-          }}
-        />
-      ))}
-    </div>
-  )
-}

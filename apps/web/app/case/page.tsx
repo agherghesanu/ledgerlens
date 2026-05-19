@@ -88,23 +88,26 @@ function CustomCaseCard({ c }: { c: CustomCaseResponse }) {
     : (c.scenario_text ?? '')
 
   return (
-    <div className="flex flex-col gap-4 p-5 rounded-xl border border-border bg-card">
+    <Link
+      href={`/case/${c.id}`}
+      className="group flex flex-col gap-4 p-5 rounded-xl border border-border bg-card hover:border-indigo/40 hover:bg-card-2 transition-all duration-200 cursor-pointer no-underline"
+    >
       <div className="flex items-start justify-between gap-3">
         <span className="cap text-[10px] px-2 py-0.5 rounded-full bg-indigo/10 text-indigo">{c.category}</span>
         <span className={`cap text-[10px] px-2 py-0.5 rounded-full ${DIFFICULTY_STYLES[c.difficulty] ?? 'bg-card-3 text-text-mute'}`}>
           {c.difficulty}
         </span>
       </div>
-      <h3 className="font-display font-bold text-[17px] leading-snug text-text m-0">{c.title}</h3>
+      <h3 className="font-display font-bold text-[17px] leading-snug text-text m-0 group-hover:text-indigo transition-colors">{c.title}</h3>
       <div className="flex flex-col gap-1.5">
         <span className="cap text-[9px] text-indigo/70">SCENARIO</span>
         <p className="text-[13px] leading-relaxed text-text-dim m-0">{excerpt}</p>
       </div>
       <div className="flex items-center justify-between mt-auto pt-2 border-t border-border-dim">
         <span className="font-mono text-[11px] text-text-mute">{c.dataset?.length ?? 0} line items</span>
-        <span className="cap text-[10px] px-2 py-0.5 rounded-full bg-card-3 text-text-mute">org case</span>
+        <span className="font-mono text-[12px] text-indigo group-hover:underline">Review →</span>
       </div>
-    </div>
+    </Link>
   )
 }
 

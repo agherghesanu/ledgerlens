@@ -376,7 +376,7 @@ async def test_get_profile_with_data(client):
             "escalated_appropriately": 10,
             "explanation_quality": 8,
         },
-        total=8.75,
+        total=87.5,
         time_spent=720,
     )
     await _seed_scored_review(
@@ -389,7 +389,7 @@ async def test_get_profile_with_data(client):
             "escalated_appropriately": 6,
             "explanation_quality": 5,
         },
-        total=5.0,
+        total=50.0,
         time_spent=4200,
     )
 

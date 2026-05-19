@@ -50,9 +50,21 @@ export default function AdminPage() {
     category: 'Custom',
     difficulty: 'medium',
     scenario_text: '',
+    ai_narrative: '',
+    ai_recommendation: 'approve',
+    dataset: [],
     correct_decision: 'escalate',
     correct_issue_summary: '',
   })
+  type DataRow = { account: string; budget: string; actual: string; notes: string; flagged: boolean }
+  const emptyRow = (): DataRow => ({ account: '', budget: '', actual: '', notes: '', flagged: false })
+  const [rows, setRows] = useState<DataRow[]>([emptyRow()])
+
+  function updateRow(i: number, patch: Partial<DataRow>) {
+    setRows((prev) => prev.map((r, idx) => idx === i ? { ...r, ...patch } : r))
+  }
+  function addRow() { setRows((prev) => [...prev, emptyRow()]) }
+  function removeRow(i: number) { setRows((prev) => prev.filter((_, idx) => idx !== i)) }
 
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteMsg, setInviteMsg] = useState('')
@@ -104,8 +116,16 @@ export default function AdminPage() {
           className="flex flex-col gap-4 p-5"
           onSubmit={(e) => {
             e.preventDefault()
-            createCase.mutate(caseForm)
-            setCaseForm({ title: '', category: 'Custom', difficulty: 'medium', scenario_text: '', correct_decision: 'escalate', correct_issue_summary: '' })
+            const dataset = rows
+              .filter((r) => r.account.trim())
+              .map((r) => {
+                const budget = parseFloat(r.budget) || 0
+                const actual = parseFloat(r.actual) || 0
+                return { account: r.account, budget, actual, variance: actual - budget, notes: r.notes, flagged: r.flagged }
+              })
+            createCase.mutate({ ...caseForm, dataset })
+            setCaseForm({ title: '', category: 'Custom', difficulty: 'medium', scenario_text: '', ai_narrative: '', ai_recommendation: 'approve', dataset: [], correct_decision: 'escalate', correct_issue_summary: '' })
+            setRows([emptyRow()])
           }}
         >
           <div className="grid grid-cols-2 gap-3">
@@ -143,6 +163,132 @@ export default function AdminPage() {
               placeholder="Describe the financial scenario, including any AI-generated analysis the analyst should review..."
               required
             />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="cap text-[10px] text-text-mute">AI NARRATIVE (what the AI "said" — shown to analysts)</label>
+            <textarea
+              className="px-3 py-2.5 rounded-lg border border-border bg-card-2 text-sm text-text outline-none focus:border-indigo/60 resize-none"
+              rows={4}
+              value={caseForm.ai_narrative}
+              onChange={(e) => setCaseForm({ ...caseForm, ai_narrative: e.target.value })}
+              placeholder="The AI recommends approving this budget variance. Revenue increased 12% YoY, driven by…"
+            />
+            <p className="text-[11px] text-text-mute m-0">Leave blank to use the scenario text above.</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <label className="cap text-[10px] text-text-mute">AI RECOMMENDATION</label>
+              <select
+                className="h-9 px-3 rounded-lg border border-border bg-card-2 text-sm text-text outline-none font-mono"
+                value={caseForm.ai_recommendation}
+                onChange={(e) => setCaseForm({ ...caseForm, ai_recommendation: e.target.value })}
+              >
+                <option value="approve">Approve</option>
+                <option value="reject">Reject</option>
+                <option value="escalate">Escalate</option>
+              </select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="cap text-[10px] text-text-mute">CORRECT DECISION</label>
+              <select
+                className="h-9 px-3 rounded-lg border border-border bg-card-2 text-sm text-text outline-none font-mono"
+                value={caseForm.correct_decision}
+                onChange={(e) => setCaseForm({ ...caseForm, correct_decision: e.target.value })}
+              >
+                <option value="approve">Approve</option>
+                <option value="reject">Reject</option>
+                <option value="escalate">Escalate</option>
+                <option value="ask_evidence">Ask Evidence</option>
+                <option value="flag_assumption">Flag Assumption</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="cap text-[10px] text-text-mute">CONTEXTUAL EVIDENCE (line items)</label>
+            <div className="rounded-lg border border-border overflow-hidden">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="bg-card-2 border-b border-border">
+                    <th className="px-3 py-2 text-left font-medium text-text-mute text-[11px] w-[30%]">Account</th>
+                    <th className="px-3 py-2 text-right font-medium text-text-mute text-[11px] w-[15%]">Budget</th>
+                    <th className="px-3 py-2 text-right font-medium text-text-mute text-[11px] w-[15%]">Actual</th>
+                    <th className="px-3 py-2 text-left font-medium text-text-mute text-[11px]">Notes</th>
+                    <th className="px-3 py-2 text-center font-medium text-text-mute text-[11px] w-[60px]">Flag</th>
+                    <th className="w-8" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row, i) => (
+                    <tr key={i} className="border-b border-border-dim last:border-0">
+                      <td className="px-2 py-1.5">
+                        <input
+                          className="w-full h-7 px-2 rounded border border-transparent bg-transparent text-sm text-text outline-none focus:border-indigo/50 focus:bg-card-2"
+                          value={row.account}
+                          onChange={(e) => updateRow(i, { account: e.target.value })}
+                          placeholder="Marketing Spend"
+                        />
+                      </td>
+                      <td className="px-2 py-1.5">
+                        <input
+                          type="number"
+                          className="w-full h-7 px-2 rounded border border-transparent bg-transparent text-sm text-text text-right font-mono outline-none focus:border-indigo/50 focus:bg-card-2"
+                          value={row.budget}
+                          onChange={(e) => updateRow(i, { budget: e.target.value })}
+                          placeholder="0"
+                        />
+                      </td>
+                      <td className="px-2 py-1.5">
+                        <input
+                          type="number"
+                          className="w-full h-7 px-2 rounded border border-transparent bg-transparent text-sm text-text text-right font-mono outline-none focus:border-indigo/50 focus:bg-card-2"
+                          value={row.actual}
+                          onChange={(e) => updateRow(i, { actual: e.target.value })}
+                          placeholder="0"
+                        />
+                      </td>
+                      <td className="px-2 py-1.5">
+                        <input
+                          className="w-full h-7 px-2 rounded border border-transparent bg-transparent text-sm text-text outline-none focus:border-indigo/50 focus:bg-card-2"
+                          value={row.notes}
+                          onChange={(e) => updateRow(i, { notes: e.target.value })}
+                          placeholder="Optional note"
+                        />
+                      </td>
+                      <td className="px-2 py-1.5 text-center">
+                        <input
+                          type="checkbox"
+                          checked={row.flagged}
+                          onChange={(e) => updateRow(i, { flagged: e.target.checked })}
+                          className="accent-rose cursor-pointer"
+                          title="Flag this row"
+                        />
+                      </td>
+                      <td className="pr-2 py-1.5 text-center">
+                        <button
+                          type="button"
+                          onClick={() => removeRow(i)}
+                          disabled={rows.length === 1}
+                          className="w-6 h-6 rounded flex items-center justify-center text-text-mute hover:text-rose hover:bg-rose/10 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                        >
+                          ×
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <button
+              type="button"
+              onClick={addRow}
+              className="self-start h-7 px-3 rounded-lg border border-border bg-card-2 font-mono text-[11px] text-text-dim hover:text-text hover:border-indigo/40 transition-colors"
+            >
+              + Add row
+            </button>
+            <p className="text-[11px] text-text-mute m-0">Variance auto-computed as actual − budget. Flag marks suspicious rows in red.</p>
           </div>
 
           <div className="flex flex-col gap-1.5">

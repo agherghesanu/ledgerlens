@@ -50,9 +50,9 @@ export default function CaseDrillPage({ params }: { params: Promise<{ id: string
     if (!action) return
     submitMutation.mutate({
       case_id: id,
-      action,
+      action: action.toLowerCase(),
       reasoning,
-      time_spent_seconds: 42, // stub for now
+      time_spent_seconds: 42,
     })
   }
 

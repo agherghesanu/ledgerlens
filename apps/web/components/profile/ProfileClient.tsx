@@ -36,13 +36,12 @@ export function ProfileClient() {
         </div>
 
         {/* Peer comparison chip */}
-        {profile && profile.accuracy !== null && (
+        {profile && profile.accuracy !== null && profile.peer_percentile !== null && (
           <Chip variant="indigo" lg>
-            {/* Lightning icon */}
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
               <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z" />
             </svg>
-            PEER COMPARISON · TOP 23%
+            PEER COMPARISON · TOP {Math.round(100 - profile.peer_percentile)}%
           </Chip>
         )}
       </div>

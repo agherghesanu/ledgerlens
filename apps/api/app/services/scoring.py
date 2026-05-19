@@ -16,8 +16,8 @@ from app.services.llm import complete_json
 
 logger = logging.getLogger(__name__)
 
-_FLASH = "gemini-2.5-flash"
-_PRO   = "gemini-2.5-flash"
+_FLASH = "gemini-3.1-flash-lite"
+_PRO   = "gemini-3.1-flash-lite"
 
 _CONCERNED = {"reject", "escalate", "ask_evidence", "flag_assumption"}
 
