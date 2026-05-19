@@ -13,11 +13,12 @@ import app.models.score   # noqa: F401 — ensures Score is registered before ma
 logger = logging.getLogger(__name__)
 
 _CASES_DIR = Path(__file__).parents[2] / "seed" / "cases"
-_SCHEMA_PATH = Path(__file__).parents[4] / "packages" / "types" / "case.schema.json"
+_parents = Path(__file__).parents
+_SCHEMA_PATH = (_parents[4] / "packages" / "types" / "case.schema.json") if len(_parents) > 4 else None
 
 
 def _load_schema() -> dict | None:
-    if not _SCHEMA_PATH.exists():
+    if _SCHEMA_PATH is None or not _SCHEMA_PATH.exists():
         return None
     return json.loads(_SCHEMA_PATH.read_text())
 
