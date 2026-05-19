@@ -35,6 +35,9 @@ def _check(key: str, limit: int, window: int) -> bool:
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable):
+        if request.method == "OPTIONS":
+            return await call_next(request)
+
         ip = request.client.host if request.client else "unknown"
         path = request.url.path
 
