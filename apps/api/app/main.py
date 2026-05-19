@@ -46,13 +46,13 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(title="LedgerLens API", version="0.1.0", lifespan=lifespan)
 
-app.add_middleware(RateLimitMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(RateLimitMiddleware)
 
 app.include_router(auth_router)
 app.include_router(cases_router)
