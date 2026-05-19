@@ -28,7 +28,11 @@ export default function RegisterPage() {
         full_name: fullName || undefined,
         date_of_birth: dateOfBirth || undefined,
       })
-      setStep('verify')
+      const params = new URLSearchParams()
+      params.append('username', email)
+      params.append('password', password)
+      const data = await apiLogin(params)
+      login(data.access_token)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Registration failed')
     } finally {
