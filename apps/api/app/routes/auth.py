@@ -68,20 +68,18 @@ async def register(
     if result.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    code = _gen_code()
     user = User(
         email=user_in.email,
         hashed_password=get_password_hash(user_in.password),
         full_name=user_in.full_name,
         date_of_birth=user_in.date_of_birth,
-        is_verified=False,
-        verification_code=code,
+        is_verified=True,
+        verification_code=None,
     )
     db.add(user)
     await db.commit()
     await db.refresh(user)
     background_tasks.add_task(send_welcome_email, user_in.email)
-    background_tasks.add_task(send_verification_email, user_in.email, code)
     return user
 
 
