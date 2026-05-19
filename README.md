@@ -10,7 +10,7 @@ Finance judgment simulator. Junior analysts review AI-generated finance analyses
 
 - AI generates finance scenarios (variance analysis, reconciliation, revenue recognition, etc.) with hidden flaws using Gemini
 - Analysts read the scenario, choose an action (approve / reject / escalate), and write reasoning
-- Claude scores the submission across four criteria: caught main issue, over-trusted AI, escalated appropriately, explanation quality
+- Gemini scores the submission across four criteria: caught main issue, over-trusted AI, escalated appropriately, explanation quality
 - Profile tracks skill bars, Over-Trust Index, streak, and review history
 - Organizations: admins create custom cases and invite team members; admin dashboard shows team performance
 
@@ -22,8 +22,8 @@ Finance judgment simulator. Junior analysts review AI-generated finance analyses
 |---|---|
 | Frontend | Next.js 15 App Router, TypeScript, Tailwind CSS, TanStack Query v5 |
 | Backend | FastAPI, SQLAlchemy async, SQLite (dev) / Postgres (prod) |
-| Case generation | Google Gemini (`gemini-2.0-flash`) |
-| Scoring | Anthropic Claude (`claude-sonnet-4-6`) |
+| Case generation | Google Gemini (`gemini-3.1-flash-lite`) |
+| Scoring | Google Gemini (`gemini-3.1-flash-lite`) |
 | Email | Gmail SMTP via Python `smtplib` |
 | Payments | Stripe Checkout |
 
@@ -107,7 +107,7 @@ pnpm dev
 | Variable | Description |
 |---|---|
 | `DATABASE_URL` | SQLAlchemy async URL — SQLite for dev, `postgresql+asyncpg://...` for prod |
-| `GEMINI_API_KEY` | Google AI Studio key — case generation |
+| `GEMINI_API_KEY` | Google AI Studio key — case generation and scoring |
 | `SMTP_HOST` | SMTP server (`smtp.gmail.com`) |
 | `SMTP_PORT` | SMTP port (587 for TLS) |
 | `SMTP_USER` | SMTP login email |
