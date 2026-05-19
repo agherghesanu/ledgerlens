@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from datetime import datetime, UTC, timedelta
+from datetime import date, datetime, UTC, timedelta
 from typing import Any
 
 from fastapi import APIRouter, Depends
@@ -228,7 +228,7 @@ async def get_stats(
     accuracy: float | None = (sum(scores) / len(scores)) if scores else None
 
     # Accuracy delta
-    now = datetime.now(UTC).replace(tzinfo=None)
+    now = datetime.now(UTC)
     cutoff_recent = now - timedelta(days=30)
     cutoff_prior = now - timedelta(days=60)
     recent_scores = [r.total for r in rows if r.submitted_at >= cutoff_recent]
@@ -245,11 +245,11 @@ async def get_stats(
     streak_days = _streak(all_dates)
 
     # Weekly progress
-    def week_monday(dt: datetime) -> datetime:
+    def week_monday(dt: datetime) -> date:
         d = dt.date()
-        return datetime.combine(d - timedelta(days=d.weekday()), datetime.min.time())
+        return d - timedelta(days=d.weekday())
 
-    week_buckets: dict[datetime, list[float]] = {}
+    week_buckets: dict[date, list[float]] = {}
     for r in rows:
         w = week_monday(r.submitted_at)
         week_buckets.setdefault(w, []).append(r.total)
