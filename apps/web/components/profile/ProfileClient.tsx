@@ -15,7 +15,7 @@ import { Chip } from '@/components/ui/Chip'
 export function ProfileClient() {
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile', 'aggregate'],
-    queryFn: getProfile,
+    queryFn: () => getProfile(),
     staleTime: 30_000,
   })
 

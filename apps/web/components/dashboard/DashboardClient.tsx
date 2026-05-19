@@ -23,17 +23,17 @@ import Link from 'next/link'
 export function DashboardClient() {
   const statsQ = useQuery({
     queryKey: ['profile', 'stats'],
-    queryFn: getProfileStats,
+    queryFn: () => getProfileStats(),
   })
 
   const recentQ = useQuery({
     queryKey: ['profile', 'recent'],
-    queryFn: getRecentReviews,
+    queryFn: () => getRecentReviews(),
   })
 
   const casesQ = useQuery({
     queryKey: ['cases'],
-    queryFn: getCases,
+    queryFn: () => getCases(),
   })
 
   // Pick the first hard-pending case, fall back to any pending case
