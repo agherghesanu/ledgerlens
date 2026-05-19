@@ -16,7 +16,9 @@ _CASES_DIR = Path(__file__).parents[2] / "seed" / "cases"
 _SCHEMA_PATH = Path(__file__).parents[4] / "packages" / "types" / "case.schema.json"
 
 
-def _load_schema() -> dict:
+def _load_schema() -> dict | None:
+    if not _SCHEMA_PATH.exists():
+        return None
     return json.loads(_SCHEMA_PATH.read_text())
 
 
@@ -45,11 +47,12 @@ async def seed_if_empty() -> None:
         inserted = 0
         for path in sorted(_CASES_DIR.glob("*.json")):
             raw = json.loads(path.read_text(encoding='utf-8'))
-            try:
-                jsonschema.validate(raw, schema)
-            except jsonschema.ValidationError as exc:
-                logger.warning("Skipping %s — schema validation failed: %s", path.name, exc.message)
-                continue
+            if schema is not None:
+                try:
+                    jsonschema.validate(raw, schema)
+                except jsonschema.ValidationError as exc:
+                    logger.warning("Skipping %s — schema validation failed: %s", path.name, exc.message)
+                    continue
             session.add(_map_case(raw))
             inserted += 1
 
