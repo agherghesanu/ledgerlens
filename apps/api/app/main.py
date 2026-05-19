@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
@@ -46,9 +47,11 @@ async def lifespan(_: FastAPI):
 app = FastAPI(title="LedgerLens API", version="0.1.0", lifespan=lifespan)
 
 app.add_middleware(RateLimitMiddleware)
+_extra_origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000"] + _extra_origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
