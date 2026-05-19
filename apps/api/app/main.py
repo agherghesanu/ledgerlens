@@ -54,6 +54,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/_version")
+async def version():
+    return {"version": "b57d70c", "cors": "open"}
+
 app.include_router(auth_router)
 app.include_router(cases_router)
 app.include_router(organizations_router)
